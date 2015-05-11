@@ -8,7 +8,12 @@ import java.lang.*;
 import java.sql.*;
 import java.io.*;
 
+class Pair {
+    int x, y;
+}
+
 public class main {
+
 //    public static void displayMenu()
 //    {
 //        System.out.println("        Book Store Management System     ");
