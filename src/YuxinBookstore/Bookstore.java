@@ -1,18 +1,35 @@
-/**
+ /**
  * Created by Orthocenter on 5/11/15.
  */
 
-package fudandb;
+// format: ChenYuxin13307130248
+// ddl 19th May, 10pm
 
-import java.lang.*;
-import java.sql.*;
-import java.io.*;
+package YuxinBookstore;
 
-class Pair {
-    int x, y;
-}
+public class Bookstore {
 
-public class main {
+    public static void displayMenu() {
+        final Customer customer = new Customer();
+
+        MenuItem[] menuItems = new MenuItem[] {
+                new MenuItem() {
+                    public void showDesc() {customer.mainMenuDesc();}
+                    public void run() {customer.mainMenu();}
+                },
+                new MenuItem() {
+                    public void showDesc() { System.out.println("Exit"); }
+                    public void run() { return; }
+                }
+        };
+
+        MenuDisplay menuDisplay = new MenuDisplay();
+        menuDisplay.choose(menuItems);
+    }
+
+    public static void main(String[] args) {
+        displayMenu();
+    }
 
 //    public static void displayMenu()
 //    {
