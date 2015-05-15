@@ -11,11 +11,16 @@ public class Bookstore {
 
     public static void displayMenu() {
         final Customer customer = new Customer();
+        final Admin admin = new Admin();
 
         MenuItem[] menuItems = new MenuItem[] {
                 new MenuItem() {
                     public void showDesc() {customer.mainMenuDesc();}
                     public void run() {customer.mainMenu();}
+                },
+                new MenuItem() {
+                    public void showDesc() {admin.mainMenuDesc();}
+                    public void run() {admin.mainMenu();}
                 },
                 new MenuItem() {
                     public void showDesc() { System.out.println("Exit"); }

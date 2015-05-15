@@ -12,7 +12,7 @@ interface MenuItem {
 }
 
 public class MenuDisplay {
-    public void showMenu(MenuItem[] menuItems) {
+    public static void showMenu(MenuItem[] menuItems) {
         int i = 0;
         for(MenuItem item : menuItems) {
             System.out.format("%3d : ", i++);
@@ -20,7 +20,7 @@ public class MenuDisplay {
         }
     }
 
-    public void choose(MenuItem[] menuItems) {
+    public static void choose(MenuItem[] menuItems) {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         String choice;
         int c = 0;
