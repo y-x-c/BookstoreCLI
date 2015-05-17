@@ -4,10 +4,12 @@ package YuxinBookstore;
  * Created by Orthocenter on 5/12/15.
  */
 
+import javax.xml.transform.Result;
 import java.awt.*;
 import java.io.*;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.util.ArrayList;
 
 
 public class Book {
@@ -221,6 +223,17 @@ public class Book {
                         order.add2Cart(cid, isbn);
                     }
                 },
+                    new MenuItem() {
+                        @Override
+                        public void showDesc() {
+                            Book.showSuggestionsDesc();
+                        }
+
+                        @Override
+                        public void run() {
+                            Book.showSuggestions(isbn);
+                        }
+                    },
                 new MenuItem() {
                     public void showDesc() {
                         System.out.println("Return");
@@ -368,9 +381,68 @@ public class Book {
         }
 
         try {
+            String sql = "SELECT isbn, SUM(amount) as sales FROM ItemInOrder GROUP BY isbn ORDER BY SUM(amount) DESC";
 
+            Connector con = new Connector();
+            ResultSet rs = con.stmt.executeQuery(sql);
+
+            while(rs.next() && m-- > 0) {
+                System.out.format("ISBN: %s  Sales: %s\n", rs.getString("isbn"), rs.getInt("sales"));
+            }
         } catch (Exception e) {
+            System.out.println("Failed to query");
+            System.err.println(e.getMessage());
+            return;
+        }
+    }
 
+    public static ArrayList<String> suggest(final String isbn) {
+        try {
+            String sql = "SELECT I2.isbn, SUM(I2.amount) FROM ItemInOrder I1, ItemInOrder I2, Orders O1, Orders O2 WHERE " +
+                    "O1.cid = O2.cid AND O1.orderid = I1.orderid AND O2.orderid = I2.orderid AND " +
+                    "I1.isbn='" + isbn + "'" + " AND I2.isbn != '" + isbn + "'" +
+                    " GROUP BY I2.isbn";
+
+            System.err.println(sql);
+            Connector con = new Connector();
+
+            ResultSet rs = con.stmt.executeQuery(sql);
+
+            ArrayList<String> suggestions = new ArrayList<String>();
+
+            while(rs.next()) {
+                suggestions.add(rs.getString("I2.isbn"));
+            }
+
+            return suggestions;
+        } catch(Exception e) {
+            System.out.println("Failed to query");
+            System.err.println(e.getMessage());
+            return null;
+        }
+    }
+
+    public static void showSuggestionsDesc() {
+        System.out.println("Give you some suggested books");
+    }
+
+    public static void showSuggestions(final String isbn) {
+        ArrayList<String> suggestions = suggest(isbn);
+
+        try {
+            Connector con = new Connector();
+
+            for (String suggestion : suggestions) {
+                String sql = "SELECT * FROM Book WHERE isbn = '" + suggestion + "'";
+                System.err.println(sql);
+                ResultSet rs = con.stmt.executeQuery(sql);
+                rs.next();
+                System.out.format("Title: %s  ISBN: %s: \n", rs.getString("title"), rs.getString("isbn")); //TBD
+            }
+        } catch(Exception e) {
+            System.out.print("Failed to print suggestions");
+            System.err.println(e.getMessage());
+            return;
         }
     }
 }

@@ -4,6 +4,7 @@ import apple.laf.JRSUIUtils;
 
 import java.awt.*;
 import java.io.*;
+import java.sql.ResultSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -14,8 +15,6 @@ import java.util.TreeMap;
 
 
 public class Order {
-
-    public static TreeMap<String, Integer> itemList = new TreeMap<String, Integer>();
 
     public static void buyNowDesc() {
         System.out.println("Buy it now!");
@@ -36,12 +35,23 @@ public class Order {
         try {
             do{ System.out.println("Please enter the amount : "); }
             while ((amount = in.readLine()) == null || amount.length() == 0) ;
-
-            Integer oldAmount = 0;
-            oldAmount = itemList.get(isbn);
-            Integer newAmount = (oldAmount == null ? 0 : oldAmount) + new Integer(amount);
-            itemList.put(isbn, newAmount);
         } catch(Exception e) {
+            System.out.println("Failed to read");
+            System.err.println(e.getMessage());
+            return ;
+        }
+
+        try {
+            String sql = "INSERT INTO Cart (cid, isbn, amount) VALUES (" + cid + ",'" + isbn + "'," + amount + ") " +
+                    "ON DUPLICATE KEY UPDATE amount = amount + " + amount;
+            System.err.println(sql);
+
+            Connector con = new Connector();
+            con.stmt.execute(sql);
+
+            System.out.println("Successfully");
+        } catch(Exception e) {
+            System.out.println("Failed to add into shopping cart");
             System.err.println(e.getMessage());
             return ;
         }
@@ -81,33 +91,21 @@ public class Order {
     }
 
     public static void showCart(final int cid) {
-        MenuItem[] menuItems = new MenuItem[itemList.size() + 1];
-        menuItems[itemList.size()] = new MenuItem() {
-            public void showDesc() {
-                System.out.println("Return");
-            }
-            public void run() {
-                return ;
-            }
-        };
+        try {
+            String sql = "SELECT * FROM Cart C NATURAL JOIN Book B WHERE C.cid = " + cid;
+            System.err.println(sql);
+            Connector con = new Connector();
+            ResultSet rs = con.stmt.executeQuery(sql);
 
-        int i = 0;
-        for(final Map.Entry<String, Integer> entry : itemList.entrySet()) {
-            menuItems[i++] = new MenuItem() {
-                @Override
-                public void showDesc() {
-                    editItemDesc(entry.getKey(), entry.getValue(), 0.0f);
-                }
-
-                @Override
-                public void run() {
-                    editItem(cid, entry.getKey(), entry.getValue(), 0.0f);
-                }
-            };
+            while(rs.next()) {
+                System.out.format("Title: %s  Price: %f  ISBN: %s  Amount: %d\n", rs.getString("B.title"),
+                        rs.getFloat("B.price"), rs.getString("isbn"), rs.getInt("C.amount"));
+            }
+        } catch (Exception e) {
+            System.out.println("Failed to query");
+            System.err.println(e.getMessage());
+            return;
         }
-
-        MenuDisplay menuDisplay = new MenuDisplay();
-        menuDisplay.choose(menuItems);
     }
 
     public static void editItemDesc(final String isbn, final Integer amount, final float price) {

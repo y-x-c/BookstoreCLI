@@ -52,4 +52,40 @@ public class Publisher {
 
         return pids.get(c).intValue();
     }
+
+    public static void showPopularPublishersDesc() {
+        System.out.println("Show most popular publishers in a certain period");
+    }
+
+    public static void showPopularPublishers() {
+        int m;
+
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+
+            System.out.println("Please enter the amount of the most popular publishers you want to see");
+            m = Integer.parseInt(in.readLine());
+        } catch(Exception e) {
+            System.out.println("Failed to read");
+            System.err.println(e.getMessage());
+            return;
+        }
+
+        try {
+            String sql = "SELECT B.pid, SUM(I.amount) as sales FROM ItemInOrder I, Book B " +
+                    "WHERE I.isbn = B.isbn " +
+                    "GROUP BY B.pid ORDER BY SUM(I.amount) DESC";
+
+            Connector con = new Connector();
+            ResultSet rs = con.stmt.executeQuery(sql);
+
+            while(rs.next() && m-- > 0) {
+                System.out.format("Publisher id: %d  Sales: %s\n", rs.getInt("B.pid"), rs.getInt("sales"));
+            }
+        } catch (Exception e) {
+            System.out.println("Failed to query");
+            System.err.println(e.getMessage());
+            return;
+        }
+    }
 }

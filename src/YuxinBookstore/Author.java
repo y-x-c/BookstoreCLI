@@ -174,4 +174,40 @@ public class Author {
 
         System.out.format("The degree between %d and %d is too far to be determined. > <\n", authid1, authid2);
     }
+
+    public static void showPopularAuthorsDesc() {
+        System.out.println("Show most popular authors in a certain period");
+    }
+
+    public static void showPopularAuthors() {
+        int m;
+
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+
+            System.out.println("Please enter the amount of the most popular authors you want to see");
+            m = Integer.parseInt(in.readLine());
+        } catch(Exception e) {
+            System.out.println("Failed to read");
+            System.err.println(e.getMessage());
+            return;
+        }
+
+        try {
+            String sql = "SELECT W.authid, SUM(I.amount) as sales FROM ItemInOrder I, WrittenBy W " +
+                    "WHERE I.isbn = W.isbn " +
+                    "GROUP BY W.authid ORDER BY SUM(I.amount) DESC";
+
+            Connector con = new Connector();
+            ResultSet rs = con.stmt.executeQuery(sql);
+
+            while(rs.next() && m-- > 0) {
+                System.out.format("Author id: %d  Sales: %s\n", rs.getInt("W.authid"), rs.getInt("sales"));
+            }
+        } catch (Exception e) {
+            System.out.println("Failed to query");
+            System.err.println(e.getMessage());
+            return;
+        }
+    }
 }

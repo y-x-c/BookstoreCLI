@@ -41,6 +41,61 @@ public class Admin {
                     }
                 },
                 new MenuItem() {
+                    @Override
+                    public void showDesc() {
+                        Book.showPopularBooksDesc();
+                    }
+
+                    @Override
+                    public void run() {
+                        Book.showPopularBooks();
+                    }
+                },
+                new MenuItem() {
+                    @Override
+                    public void showDesc() {
+                        Publisher.showPopularPublishersDesc();
+                    }
+
+                    @Override
+                    public void run() {
+                        Publisher.showPopularPublishers();
+                    }
+                },
+                new MenuItem() {
+                    @Override
+                    public void showDesc() {
+                        Author.showPopularAuthorsDesc();
+                    }
+
+                    @Override
+                    public void run() {
+                        Author.showPopularAuthors();
+                    }
+                },
+                new MenuItem() {
+                    @Override
+                    public void showDesc() {
+                        Customer.trustedUsersDesc();
+                    }
+
+                    @Override
+                    public void run() {
+                        Customer.trustedUsers();
+                    }
+                },
+                new MenuItem() {
+                    @Override
+                    public void showDesc() {
+                        Customer.usefulUsersDesc();
+                    }
+
+                    @Override
+                    public void run() {
+                        Customer.usefulUsers();
+                    }
+                },
+                new MenuItem() {
                     public void showDesc() {
                         System.out.println("Return");
                     }

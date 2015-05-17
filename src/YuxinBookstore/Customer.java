@@ -258,4 +258,77 @@ public class Customer {
         MenuDisplay display = new MenuDisplay();
         display.choose(menuItems);
     }
+
+    public static void trustedUsersDesc() {
+        System.out.println("Print the top m most 'trusted' users");
+    }
+
+    public static void trustedUsers() {
+        int m;
+
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+
+            System.out.println("Please enter the amount of the most popular authors you want to see");
+            m = Integer.parseInt(in.readLine());
+        } catch(Exception e) {
+            System.out.println("Failed to read");
+            System.err.println(e.getMessage());
+            return;
+        }
+
+        try {
+            String sql = "SELECT *, " +
+                    "(SELECT COUNT(*) FROM TrustRecords T1 WHERE T1.cid2 = C.cid AND T1.trust = 1) - (SELECT COUNT(*) FROM TrustRecords T2 WHERE T2.cid2 = C.cid AND T2.trust = 0) AS score " +
+                    "FROM Customer C ORDER BY " +
+                    "score DESC";
+            System.err.println(sql);
+            Connector con = new Connector();
+            ResultSet rs = con.stmt.executeQuery(sql);
+
+            while(rs.next() && m-- > 0) {
+                System.out.format("Customer id: %d  Trust score: %d\n", rs.getInt("C.cid"), rs.getInt("score"));
+            }
+
+        } catch(Exception e) {
+            System.out.println("Failed to query");
+            System.out.println(e.getMessage());
+            return;
+        }
+    }
+
+    public static void usefulUsersDesc() {
+        System.out.println("Print the top m most 'useful' users");
+    }
+
+    public static void usefulUsers() {
+        int m;
+
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+
+            System.out.println("Please enter the amount of the most popular authors you want to see");
+            m = Integer.parseInt(in.readLine());
+        } catch(Exception e) {
+            System.out.println("Failed to read");
+            System.err.println(e.getMessage());
+            return;
+        }
+
+        try {
+            String sql = "SELECT cid, AVG(rating) AS avgRating FROM Usefulness U GROUP BY U.cid ORDER BY avgRating DESC";
+            System.err.println(sql);
+            Connector con = new Connector();
+            ResultSet rs = con.stmt.executeQuery(sql);
+
+            while(rs.next() && m-- > 0) {
+                System.out.format("Customer id: %d  Average usefulness: %f\n", rs.getInt("cid"), rs.getFloat("avgRating"));
+            }
+
+        } catch(Exception e) {
+            System.out.println("Failed to query");
+            System.out.println(e.getMessage());
+            return;
+        }
+    }
 }
