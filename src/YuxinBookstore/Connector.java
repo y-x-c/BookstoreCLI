@@ -22,6 +22,18 @@ public class Connector {
             		System.err.println(e.getMessage());
 			throw(e);
 		}
+
+		System.err.println("Created a new connection");
+	}
+
+	public void newStatement() throws Exception {
+		try {
+			stmt = con.createStatement();
+		} catch(Exception e) {
+			System.err.println("Unable to create a new statement");
+			throw(e);
+		}
+
 	}
 	
 	public void closeConnection() throws Exception{

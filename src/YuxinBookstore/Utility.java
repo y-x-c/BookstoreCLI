@@ -5,6 +5,7 @@ package YuxinBookstore;
  */
 
 import java.io.*;
+import java.sql.ResultSet;
 
 public class Utility {
     public static int getChoice(int bound) {
@@ -40,5 +41,21 @@ public class Utility {
         return ret;
     }
 
+    public static String getFullAddress(ResultSet rs) {
+        String ret = "";
 
+        try {
+            ret += "(Room)" + rs.getString("room");
+            ret += "(Street)" + rs.getString("street");
+            ret += "(district)" + rs.getString("district");
+            ret += "(city)" + rs.getString("city");
+            ret += "(state)" + rs.getString("state");
+            ret += "(country)" + rs.getString("country");
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return null;
+        }
+
+        return ret;
+    }
 }

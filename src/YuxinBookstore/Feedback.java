@@ -4,8 +4,6 @@ package YuxinBookstore;
  * Created by Orthocenter on 5/17/15.
  */
 
-import sun.org.mozilla.javascript.internal.EcmaError;
-
 import java.io.*;
 import java.sql.ResultSet;
 
@@ -39,7 +37,12 @@ public class Feedback {
             sql += "NOW()" + ")";
             System.err.println(sql);
 
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
+            try {
+                con.newStatement();
+            } catch(Exception e) {
+                return ;
+            }
             con.stmt.execute(sql);
             System.out.println("Successfully");
         } catch(Exception e) {
@@ -70,7 +73,12 @@ public class Feedback {
 
         try {
             String sql = "SELECT cid FROM Feedback WHERE fid = " + fid;
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
+            try {
+                con.newStatement();
+            } catch(Exception e) {
+                return ;
+            }
             ResultSet rs = con.stmt.executeQuery(sql);
             rs.next();
 
@@ -87,7 +95,12 @@ public class Feedback {
         try {
             String sql = "INSERT INTO Usefulness (fid, cid, rating) VALUES (";
             sql += fid + "," + cid + "," + rating + ")";
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
+            try {
+                con.newStatement();
+            } catch(Exception e) {
+                return ;
+            }
             con.stmt.execute(sql);
 
             System.out.println("Successfully");
@@ -122,7 +135,12 @@ public class Feedback {
             String sql = "SELECT C.username, F.score, F.comment, (SELECT SUM(U.rating) FROM Usefulness U WHERE U.fid = F.fid) AS usefulness FROM Feedback F NATURAL JOIN Customer C WHERE isbn = '" + isbn + "'";
             sql += " ORDER BY (SELECT SUM(U.rating) FROM Usefulness U WHERE U.fid = F.fid) DESC";
 
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
+            try {
+                con.newStatement();
+            } catch(Exception e) {
+                return ;
+            }
             ResultSet rs = con.stmt.executeQuery(sql);
 
             while(rs.next() && m-- > 0) {

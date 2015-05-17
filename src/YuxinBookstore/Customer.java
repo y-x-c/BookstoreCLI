@@ -39,12 +39,11 @@ public class Customer {
 
     public static void loginMenu() {
         //System.out.println("loginMenu");
-        Connector con = null;
+        Connector con = Bookstore.con;
         try {
-            con = new Connector();
-        } catch (Exception e) {
-            System.out.println("Cannot connect to database");
-            return;
+            con.newStatement();
+        } catch(Exception e) {
+            return ;
         }
 
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
@@ -91,13 +90,12 @@ public class Customer {
     }
 
     public static void signupMenu() {
-        Connector con = null;
+        Connector con = Bookstore.con;
         try {
-            con = new Connector();
-        } catch (Exception e) {
-            return;
+            con.newStatement();
+        } catch(Exception e) {
+            return ;
         }
-
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
         try {
@@ -183,7 +181,12 @@ public class Customer {
             String sql = "INSERT INTO TrustRecords (cid1, cid2, trust) VALUES (";
             sql += cid + "," + dcid + "," + trust + ")";
 
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
+            try {
+                con.newStatement();
+            } catch(Exception e) {
+                return ;
+            }
             con.stmt.execute(sql);
             System.out.println("Successfully");
         } catch (Exception e) {
@@ -250,6 +253,17 @@ public class Customer {
                     }
                 },
                 new MenuItem() {
+                    @Override
+                    public void showDesc() {
+                        Order.showAllOrdersDesc();
+                    }
+
+                    @Override
+                    public void run() {
+                        Order.showAllOrder(cid);
+                    }
+                },
+                new MenuItem() {
                     public void showDesc() { System.out.println("Return"); }
                     public void run() { return; }
                 }
@@ -283,7 +297,12 @@ public class Customer {
                     "FROM Customer C ORDER BY " +
                     "score DESC";
             System.err.println(sql);
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
+            try {
+                con.newStatement();
+            } catch(Exception e) {
+                return ;
+            }
             ResultSet rs = con.stmt.executeQuery(sql);
 
             while(rs.next() && m-- > 0) {
@@ -318,7 +337,12 @@ public class Customer {
         try {
             String sql = "SELECT cid, AVG(rating) AS avgRating FROM Usefulness U GROUP BY U.cid ORDER BY avgRating DESC";
             System.err.println(sql);
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
+            try {
+                con.newStatement();
+            } catch(Exception e) {
+                return ;
+            }
             ResultSet rs = con.stmt.executeQuery(sql);
 
             while(rs.next() && m-- > 0) {

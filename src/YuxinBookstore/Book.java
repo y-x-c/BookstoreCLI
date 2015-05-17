@@ -18,11 +18,10 @@ public class Book {
     }
 
     public static ResultSet search(String conditions, int orderBy) {
-        Connector con = null;
+        Connector con = Bookstore.con;
         try {
-            con = new Connector();
-        } catch (Exception e) {
-            System.out.println("Cannot connect to database");
+            con.newStatement();
+        } catch(Exception e) {
             return null;
         }
 
@@ -59,12 +58,11 @@ public class Book {
     }
 
     public static int countSearchResult(String conditions) {
-        Connector con = null;
+        Connector con = Bookstore.con;
         try {
-            con = new Connector();
-        } catch (Exception e) {
-            System.out.println("Cannot connect to database");
-            return 0;
+            con.newStatement();
+        } catch(Exception e) {
+            return -1;
         }
 
         String sql = "SELECT COUNT(*) FROM Book B NATURAL JOIN Publisher P NATURAL JOIN WrittenBy W NATURAL JOIN Author A WHERE ";
@@ -135,10 +133,6 @@ public class Book {
             System.out.println("Failed to print search result");
             System.err.println(e.getMessage());
         }
-
-//        System.out.println("Sort by (a) by year, or (b) by the average numerical score of the feedbacks, \n" +
-//                "or (c) by the average numerical score of the trusted user feedbacks :");
-//        while ((sortBy = in.readLine()) == null || sortBy.length() == 0) ;
     }
 
     public static void searchMenu(final int cid) {
@@ -150,11 +144,10 @@ public class Book {
     }
 
     public static void showDetails(final int cid, final String isbn) {
-        Connector con = null;
+        Connector con = Bookstore.con;
         try {
-            con = new Connector();
-        } catch (Exception e) {
-            System.out.println("Cannot connect to database");
+            con.newStatement();
+        } catch(Exception e) {
             return ;
         }
 
@@ -305,7 +298,12 @@ public class Book {
             sql += ")";
             System.err.println(sql);
 
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
+            try {
+                con.newStatement();
+            } catch(Exception e) {
+                return ;
+            }
             con.stmt.executeUpdate(sql);
         } catch (Exception e) {
             System.out.println("Failed to add the book into database");
@@ -353,7 +351,12 @@ public class Book {
 
         try {
             String sql = "UPDATE Book SET copies = copies + " + num + " WHERE isbn = '" + isbn + "'";
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
+            try {
+                con.newStatement();
+            } catch(Exception e) {
+                return ;
+            }
             con.stmt.execute(sql);
         } catch(Exception e) {
             System.out.println("Failed to update the amount");
@@ -383,7 +386,7 @@ public class Book {
         try {
             String sql = "SELECT isbn, SUM(amount) as sales FROM ItemInOrder GROUP BY isbn ORDER BY SUM(amount) DESC";
 
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
             ResultSet rs = con.stmt.executeQuery(sql);
 
             while(rs.next() && m-- > 0) {
@@ -404,7 +407,7 @@ public class Book {
                     " GROUP BY I2.isbn";
 
             System.err.println(sql);
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
 
             ResultSet rs = con.stmt.executeQuery(sql);
 
@@ -430,7 +433,7 @@ public class Book {
         ArrayList<String> suggestions = suggest(isbn);
 
         try {
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
 
             for (String suggestion : suggestions) {
                 String sql = "SELECT * FROM Book WHERE isbn = '" + suggestion + "'";

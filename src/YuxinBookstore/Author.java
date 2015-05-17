@@ -34,7 +34,12 @@ public class Author {
             System.err.println(sql);
 
             try {
-                Connector con = new Connector();
+                Connector con = Bookstore.con;
+                try {
+                    con.newStatement();
+                } catch(Exception e) {
+                    return ;
+                }
                 con.stmt.executeUpdate(sql);
             } catch(Exception e) {
                 System.out.println("Cannot add to relation WrittenBy");
@@ -67,7 +72,12 @@ public class Author {
 
         int i = 0;
         try {
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
+            try {
+                con.newStatement();
+            } catch(Exception e) {
+                return -1;
+            }
             ResultSet rs = con.stmt.executeQuery(sql);
 
             while(rs.next()) {
@@ -106,7 +116,12 @@ public class Author {
         sql += "('" + name + "')";
 
         try {
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
+            try {
+                con.newStatement();
+            } catch(Exception e) {
+                return -1;
+            }
             con.stmt.executeUpdate(sql);
 
             sql = "SELECT * FROM Author WHERE authname = '" + name + "'" + " ORDER BY authid DESC";
@@ -142,7 +157,12 @@ public class Author {
         try {
             String sql = "SELECT W1.isbn FROM WrittenBy W1, WrittenBy W2 WHERE W1.isbn = W2.isbn " +
                     "AND W1.authid = " + authid1 + " AND W2.authid = " + authid2;
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
+            try {
+                con.newStatement();
+            } catch(Exception e) {
+                return ;
+            }
             ResultSet rs = con.stmt.executeQuery(sql);
 
             if(rs.next()) {
@@ -159,7 +179,12 @@ public class Author {
             String sql = "SELECT W1.isbn, W4.isbn FROM WrittenBy W1, WrittenBy W2, WrittenBy W3, WrittenBy W4 WHERE " +
                     "W1.isbn = W2.isbn AND W3.isbn = W4.isbn AND W1.authid = " + authid1 +
                     " AND W2.authid = W3.authid AND W4.authid = " + authid2;
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
+            try {
+                con.newStatement();
+            } catch(Exception e) {
+                return ;
+            }
             ResultSet rs = con.stmt.executeQuery(sql);
 
             if(rs.next()) {
@@ -198,7 +223,12 @@ public class Author {
                     "WHERE I.isbn = W.isbn " +
                     "GROUP BY W.authid ORDER BY SUM(I.amount) DESC";
 
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
+            try {
+                con.newStatement();
+            } catch(Exception e) {
+                return ;
+            }
             ResultSet rs = con.stmt.executeQuery(sql);
 
             while(rs.next() && m-- > 0) {

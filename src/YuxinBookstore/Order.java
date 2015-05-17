@@ -1,13 +1,10 @@
 package YuxinBookstore;
 
-import apple.laf.JRSUIUtils;
-
-import java.awt.*;
+import javax.xml.transform.Result;
 import java.io.*;
 import java.sql.ResultSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.ArrayList;
+
 
 /**
  * Created by Orthocenter on 5/13/15.
@@ -46,7 +43,12 @@ public class Order {
                     "ON DUPLICATE KEY UPDATE amount = amount + " + amount;
             System.err.println(sql);
 
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
+            try {
+                con.newStatement();
+            } catch(Exception e) {
+                return ;
+            }
             con.stmt.execute(sql);
 
             System.out.println("Successfully");
@@ -94,7 +96,12 @@ public class Order {
         try {
             String sql = "SELECT * FROM Cart C NATURAL JOIN Book B WHERE C.cid = " + cid;
             System.err.println(sql);
-            Connector con = new Connector();
+            Connector con = Bookstore.con;
+            try {
+                con.newStatement();
+            } catch(Exception e) {
+                return ;
+            }
             ResultSet rs = con.stmt.executeQuery(sql);
 
             while(rs.next()) {
@@ -114,5 +121,126 @@ public class Order {
 
     public static void editItem(final int cid, final String isbn, final Integer amount, final float price) {
 
+    }
+
+    public static void showOrderDetailsDesc(final int orderid) {
+        String sql = "SELECT * FROM Orders WHERE orderid = " + orderid;
+
+        try {
+            Connector con = Bookstore.con;
+            con.newStatement();
+
+            ResultSet rs = con.stmt.executeQuery(sql);
+            rs.next();
+            System.out.format("Order id: %d, Time: %s, Customer id: %d\n", rs.getInt("orderid"), rs.getString("time"),
+                    rs.getInt("cid"));
+        } catch(Exception e) {
+            System.out.println("Failed to print order description");
+            System.err.println(e.getMessage());
+            return;
+        }
+    }
+
+    public static void showOrderDetails(final int orderid) {
+        try {
+            String sql = "SELECT * FROM Orders O WHERE orderid = " + orderid;
+            Connector con = Bookstore.con;
+            con.newStatement();
+
+            ResultSet rs = con.stmt.executeQuery(sql);
+            rs.next();
+            System.out.format("|--Order id : %d\n", rs.getInt("orderid"));
+            System.out.format("|--Time : %s\n", rs.getString("time"));
+
+            int cid = rs.getInt("cid");
+            int addrid = rs.getInt("addrid");
+
+            sql = "SELECT * FROM Customer C WHERE cid = " + cid;
+            rs = con.stmt.executeQuery(sql);
+            rs.next();
+
+            System.out.format("|--Username : %s\n", rs.getString("username"));
+            System.out.format("|--Name : %s\n", rs.getString("name"));
+
+            sql = "SELECT * FROM Address A WHERE addrid = " + addrid;
+            rs = con.stmt.executeQuery(sql);
+            rs.next();
+
+            System.out.format("|--Address : %s\n", Utility.getFullAddress(rs));
+            System.out.format("|--Receiver Phone : %s\n", rs.getString("phone"));
+
+            sql = "SELECT * FROM ItemInOrder I, Book B WHERE orderid = " + orderid +
+                " AND I.isbn = B.isbn";
+            rs = con.stmt.executeQuery(sql);
+
+            int i = 0;
+            float totalPrices = 0;
+            while(rs.next()) {
+                System.out.format("|--Item %d: \n", i++);
+                System.out.format("|----Title : %s\n", rs.getString("B.title"));
+                System.out.format("|----Price : %f\n", rs.getFloat("I.price"));
+                System.out.format("|----ISBN  : %s\n", rs.getString("B.isbn"));
+                System.out.format("|----Amount : %d\n", rs.getInt("I.amount"));
+                totalPrices += rs.getFloat("I.price") * rs.getInt("I.amount");
+            }
+
+            System.out.format("|--Total Prices : %f\n", totalPrices);
+        } catch(Exception e) {
+            System.out.println("Failed to print order details");
+            System.err.println(e.getMessage());
+            return;
+        }
+    }
+
+    public static void showAllOrdersDesc() {
+        System.out.println("Show all orders for a certain customer");
+    }
+
+    public static void showAllOrder(int cid) {
+        try {
+            String sql = "SELECT orderid FROM Orders O WHERE O.cid = " + cid;
+            System.err.println(sql);
+            Connector con = Bookstore.con;
+            try {
+                con.newStatement();
+            } catch(Exception e) {
+                return ;
+            }
+            ResultSet rs = con.stmt.executeQuery(sql);
+
+            ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+            while(rs.next()) {
+                final int orderid = rs.getInt("orderid");
+                menuItems.add(new MenuItem() {
+                    @Override
+                    public void showDesc() {
+                        showOrderDetailsDesc(orderid);
+                    }
+
+                    @Override
+                    public void run() {
+                        showOrderDetails(orderid);
+                    }
+                });
+            }
+
+            menuItems.add(new MenuItem() {
+                @Override
+                public void showDesc() {
+                    System.out.print("Return");
+                }
+
+                @Override
+                public void run() {
+                    return;
+                }
+            });
+
+            MenuDisplay.choose(menuItems);
+        } catch (Exception e) {
+            System.out.println("Failed to query");
+            System.err.println(e.getMessage());
+            return;
+        }
     }
 }
