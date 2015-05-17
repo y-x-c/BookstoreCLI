@@ -153,6 +153,46 @@ public class Customer {
         }
     }
 
+    public static void declareUserDesc() {
+        System.out.println("Declare other users as 'trusted' or 'not-trusted'");
+    }
+
+    public static void declareUser(int cid) {
+        int dcid = -1;
+        boolean trust;
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+
+        try {
+            System.out.println("Please enter cid : ");
+            dcid = Integer.parseInt(in.readLine());
+            System.out.println("Please enter trusted(true) or not-trusted(false) : ");
+            trust = Boolean.parseBoolean(in.readLine());
+        } catch (Exception e) {
+            System.out.println("Failed to read");
+            System.err.println(e.getMessage());
+            return;
+        }
+
+        if (dcid == cid) {
+            System.out.println("Youself are always trusted!");
+            return;
+        }
+
+        try {
+            String sql = "INSERT INTO TrustRecords (cid1, cid2, trust) VALUES (";
+            sql += cid + "," + dcid + "," + trust + ")";
+
+            Connector con = new Connector();
+            con.stmt.execute(sql);
+            System.out.println("Successfully");
+        } catch (Exception e) {
+            System.out.println("Failed to insert");
+            System.err.println(e.getMessage());
+            return;
+        }
+    }
+
     public static void userhomeMenuDesc() {
         System.out.println("");
     }
@@ -164,6 +204,39 @@ public class Customer {
                 new MenuItem() {
                     public void showDesc() { book.searchMenuDesc(); }
                     public void run() { book.searchMenu(cid); }
+                },
+                new MenuItem() {
+                    @Override
+                    public void showDesc() {
+                        Feedback.recordDesc();
+                    }
+
+                    @Override
+                    public void run() {
+                        Feedback.record(cid);
+                    }
+                },
+                new MenuItem() {
+                    @Override
+                    public void showDesc() {
+                        Feedback.assessFeedbackDesc();
+                    }
+
+                    @Override
+                    public void run() {
+                        Feedback.assessFeedback(cid);
+                    }
+                },
+                new MenuItem() {
+                    @Override
+                    public void showDesc() {
+                        Customer.declareUserDesc();
+                    }
+
+                    @Override
+                    public void run() {
+                        Customer.declareUser(cid);
+                    }
                 },
                 new MenuItem() {
                     public void showDesc() { System.out.println("Return"); }

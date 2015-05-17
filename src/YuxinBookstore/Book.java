@@ -237,9 +237,6 @@ public class Book {
             }
             while ((title = in.readLine()) == null || title.length() == 0);
 
-//            Author author = new Author();
-//            while((authid = author.choose()) == -1);
-
             Publisher publisher = new Publisher();
             while((pid = publisher.choose()) == -1);
 
