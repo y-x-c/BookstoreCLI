@@ -30,6 +30,17 @@ public class Admin {
                     }
                 },
                 new MenuItem() {
+                    @Override
+                    public void showDesc() {
+                        Author.showDegreesOfSeperationDesc();
+                    }
+
+                    @Override
+                    public void run() {
+                        Author.showDegreesOfSeperation();
+                    }
+                },
+                new MenuItem() {
                     public void showDesc() {
                         System.out.println("Return");
                     }

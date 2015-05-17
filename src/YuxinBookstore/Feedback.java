@@ -97,4 +97,43 @@ public class Feedback {
             return;
         }
     }
+
+    public static void showFeedbacksDesc() {
+        System.out.println("Show feedbacks for a given book");
+    }
+
+    public static void showFeedbacks() {
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        int m;
+        String isbn;
+
+        try {
+            System.out.println("Please enter the isbn : ");
+            isbn = in.readLine();
+            System.out.println("The amount of the most useful feedbacks you want to see : ");
+            m = Integer.parseInt(in.readLine());
+        } catch (Exception e) {
+            System.out.println("Failed to read");
+            System.err.println(e.getMessage());
+            return;
+        }
+
+        try {
+            String sql = "SELECT C.username, F.score, F.comment, (SELECT SUM(U.rating) FROM Usefulness U WHERE U.fid = F.fid) AS usefulness FROM Feedback F NATURAL JOIN Customer C WHERE isbn = '" + isbn + "'";
+            sql += " ORDER BY (SELECT SUM(U.rating) FROM Usefulness U WHERE U.fid = F.fid) DESC";
+
+            Connector con = new Connector();
+            ResultSet rs = con.stmt.executeQuery(sql);
+
+            while(rs.next() && m-- > 0) {
+                System.out.format("User: %s Score: %d  Comment: %s Usefulness: %d\n", rs.getString("C.username"), rs.getInt("F.score"),
+                        rs.getString("F.comment"), rs.getInt("usefulness"));
+            }
+
+        } catch(Exception e) {
+            System.out.println("Failed to query");
+            System.err.println(e.getMessage());
+            return;
+        }
+    }
 }

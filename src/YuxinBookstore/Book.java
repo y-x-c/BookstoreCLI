@@ -15,7 +15,7 @@ public class Book {
         System.out.println("Search books");
     }
 
-    public static ResultSet search(String conditions) {
+    public static ResultSet search(String conditions, int orderBy) {
         Connector con = null;
         try {
             con = new Connector();
@@ -27,7 +27,24 @@ public class Book {
         String sql = "SELECT * FROM Book B NATURAL JOIN Publisher P NATURAL JOIN WrittenBy W NATURAL JOIN Author A WHERE ";
         sql += conditions;
         sql += " GROUP BY B.isbn ";
-        //System.out.println(sql);
+        if(orderBy == 0) {
+            sql += " ORDER BY pubdate ASC";
+        } else if(orderBy == 1) {
+            sql += " ORDER BY pubdate DESC";
+        } else if(orderBy == 2) {
+            sql += " ORDER BY (SELECT AVG(score) FROM Feedback F WHERE F.isbn = B.isbn)ASC";
+        } else if(orderBy == 3) {
+            sql += " ORDER BY (SELECT AVG(score) FROM Feedback F WHERE F.isbn = B.isbn)DESC";
+        } else if(orderBy == 4) {
+            sql += " ORDER BY (SELECT AVG(score) FROM Feedback F WHERE F.isbn = B.isbn AND " +
+                    "F.cid NOT IN ( " +
+                    "SELECT T.cid2 FROM TrustRecords T WHERE T.trust = FALSE))ASC";
+        } else if(orderBy == 5) {
+            sql += " ORDER BY (SELECT AVG(score) FROM Feedback F WHERE F.isbn = B.isbn and " +
+                    "F.cid NOT IN ( " +
+                    "SELECT T.cid2 FROM TrustRecords T WHERE T.trust = FALSE))DESC";
+        }
+        System.out.println(sql);
 
         try {
             ResultSet rs = con.stmt.executeQuery(sql);
@@ -66,7 +83,8 @@ public class Book {
 
     public static void searchMenu(final boolean forEdit, final int cid) {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        String conditions, sortBy;
+        String conditions;
+        int orderBy = 0;
 
         try {
             do {
@@ -74,7 +92,12 @@ public class Book {
             }
             while ((conditions = in.readLine()) == null || conditions.length() == 0);
 
-            ResultSet rs = search(conditions);
+            System.out.println("Sort by year(ASC 0, DESC 1), \n" +
+                    "or by the average numerical score of the feedbacks(ASC 2, DESC 3), \n" +
+                    "or by the average numerical score of the trusted user feedbacks(ASC 4, DESC 5) :");
+            orderBy = Integer.parseInt(in.readLine());
+
+            ResultSet rs = search(conditions, orderBy);
             int cnt = countSearchResult(conditions);
 
             MenuItem[] menuItems = new MenuItem[cnt + 1];
@@ -323,6 +346,31 @@ public class Book {
             System.out.println("Failed to update the amount");
             System.err.println(e.getMessage());
             return ;
+        }
+    }
+
+    public static void showPopularBooksDesc() {
+        System.out.println("Show most popular books in a certain period");
+    }
+
+    public static void showPopularBooks() {
+        int m;
+
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+
+            System.out.println("Please enter the amount of the most popular books you want to see");
+            m = Integer.parseInt(in.readLine());
+        } catch(Exception e) {
+            System.out.println("Failed to read");
+            System.err.println(e.getMessage());
+            return;
+        }
+
+        try {
+
+        } catch (Exception e) {
+
         }
     }
 }

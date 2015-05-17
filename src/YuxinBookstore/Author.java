@@ -102,14 +102,14 @@ public class Author {
             return -1;
         }
 
-        String sql = "INSERT INTO Author (name) VALUES";
+        String sql = "INSERT INTO Author (authname) VALUES";
         sql += "('" + name + "')";
 
         try {
             Connector con = new Connector();
             con.stmt.executeUpdate(sql);
 
-            sql = "SELECT * FROM Author WHERE name = '" + name + "'" + " ORDER BY authid DESC";
+            sql = "SELECT * FROM Author WHERE authname = '" + name + "'" + " ORDER BY authid DESC";
             ResultSet rs = con.stmt.executeQuery(sql);
             rs.next();
             return rs.getInt("authid");
@@ -118,5 +118,60 @@ public class Author {
             System.err.println(e.getMessage());
             return -1;
         }
+    }
+
+    public static void showDegreesOfSeperationDesc() {
+        System.out.println("Determine the degree of separation of two given authors");
+    }
+
+    public static void showDegreesOfSeperation() {
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        int authid1, authid2;
+
+        try {
+            System.out.println("Please enter the first author id : ");
+            authid1 = Integer.parseInt(in.readLine());
+            System.out.println("Please enter the second author id :");
+            authid2 = Integer.parseInt(in.readLine());
+        } catch(Exception e) {
+            System.out.println("Failed to read");
+            System.err.println(e.getMessage());
+            return;
+        }
+
+        try {
+            String sql = "SELECT W1.isbn FROM WrittenBy W1, WrittenBy W2 WHERE W1.isbn = W2.isbn " +
+                    "AND W1.authid = " + authid1 + " AND W2.authid = " + authid2;
+            Connector con = new Connector();
+            ResultSet rs = con.stmt.executeQuery(sql);
+
+            if(rs.next()) {
+                System.out.format("%d and %d is 1-degree away\n", authid1, authid2);
+                return;
+            }
+        } catch(Exception e) {
+            System.out.println("Failed to query");
+            System.err.println(e.getMessage());
+            return;
+        }
+
+        try {
+            String sql = "SELECT W1.isbn, W4.isbn FROM WrittenBy W1, WrittenBy W2, WrittenBy W3, WrittenBy W4 WHERE " +
+                    "W1.isbn = W2.isbn AND W3.isbn = W4.isbn AND W1.authid = " + authid1 +
+                    " AND W2.authid = W3.authid AND W4.authid = " + authid2;
+            Connector con = new Connector();
+            ResultSet rs = con.stmt.executeQuery(sql);
+
+            if(rs.next()) {
+                System.out.format("%d and %d is 2-degrees away\n", authid1, authid2);
+                return;
+            }
+        } catch(Exception e) {
+            System.out.println("Failed to query");
+            System.err.println(e.getMessage());
+            return;
+        }
+
+        System.out.format("The degree between %d and %d is too far to be determined. > <\n", authid1, authid2);
     }
 }

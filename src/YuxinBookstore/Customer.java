@@ -239,6 +239,17 @@ public class Customer {
                     }
                 },
                 new MenuItem() {
+                    @Override
+                    public void showDesc() {
+                        Feedback.showFeedbacksDesc();
+                    }
+
+                    @Override
+                    public void run() {
+                        Feedback.showFeedbacks();
+                    }
+                },
+                new MenuItem() {
                     public void showDesc() { System.out.println("Return"); }
                     public void run() { return; }
                 }
