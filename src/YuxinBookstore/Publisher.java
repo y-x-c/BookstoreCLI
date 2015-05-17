@@ -24,9 +24,10 @@ public class Publisher {
             return -1;
         }
 
-        String sql = "SELECT P.name, B.title, P.pid FROM Publisher P JOIN Book B ON P.pid = B.bid WHERE P.name LIKE";
+        String sql = "SELECT P.pubname, B.title, P.pid FROM Publisher P NATURAL JOIN Book B WHERE P.pubname LIKE";
         sql += "'%" + name + "%'";
         sql += " GROUP BY P.pid";
+        System.err.println(sql);
 
         ArrayList<Integer> pids = new ArrayList<Integer>();
 
@@ -37,7 +38,7 @@ public class Publisher {
 
             while(rs.next()) {
                 System.out.format("%3d : ", i++);
-                System.out.format("%s %s\n", rs.getString("P.name"), rs.getString("B.title"));
+                System.out.format("%s %s\n", rs.getString("P.pubname"), rs.getString("B.title"));
                 pids.add(new Integer(rs.getInt("P.pid")));
             }
         } catch (Exception e) {

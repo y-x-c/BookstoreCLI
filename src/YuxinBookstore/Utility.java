@@ -29,4 +29,14 @@ public class Utility {
 
         return c;
     }
+
+    public static String getShortString(String str, int bound) {
+        String ret = "";
+        if(str.length() > bound) {
+            ret = str.substring(bound) + "...";
+        } else {
+            ret = str.substring(str.length());
+        }
+        return ret;
+    }
 }

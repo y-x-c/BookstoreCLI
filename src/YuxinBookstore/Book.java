@@ -24,9 +24,9 @@ public class Book {
             return null;
         }
 
-        String sql = "SELECT * FROM Book B JOIN Publisher P ON B.pid = P.pid " +
-                "JOIN Author A ON B.authid = A.authid WHERE ";
+        String sql = "SELECT * FROM Book B NATURAL JOIN Publisher P NATURAL JOIN WrittenBy W NATURAL JOIN Author A WHERE ";
         sql += conditions;
+        sql += " GROUP BY B.isbn ";
         //System.out.println(sql);
 
         try {
@@ -48,9 +48,9 @@ public class Book {
             return 0;
         }
 
-        String sql = "SELECT COUNT(*) FROM Book B JOIN Publisher P ON B.pid = P.pid " +
-                "JOIN Author A ON B.authid = A.authid WHERE ";
+        String sql = "SELECT COUNT(*) FROM Book B NATURAL JOIN Publisher P NATURAL JOIN WrittenBy W NATURAL JOIN Author A WHERE ";
         sql += conditions;
+        sql += " GROUP BY B.isbn ";
         //System.out.println(sql);
 
         try {
@@ -87,8 +87,8 @@ public class Book {
             rs.next();
             for(int i = 0; i < cnt; i++, rs.next()) {
                 final String row = rs.getString("title") + " " + rs.getString("price") + " "
-                        + rs.getString("A.name") + " " + rs.getString("isbn");
-                final long isbn = rs.getLong("isbn");
+                        + rs.getString("A.authname") + " " + rs.getString("isbn");
+                final String isbn = rs.getString("isbn");
 
                 MenuItem menuItem = new MenuItem() {
                     public void showDesc() {
@@ -107,7 +107,8 @@ public class Book {
             // TBD: turn the page
 
         } catch (Exception e) {
-
+            System.out.println("Failed to print search result");
+            System.err.println(e.getMessage());
         }
 
 //        System.out.println("Sort by (a) by year, or (b) by the average numerical score of the feedbacks, \n" +
@@ -123,7 +124,7 @@ public class Book {
         System.out.println(row);
     }
 
-    public static void showDetails(final int cid, final long isbn) {
+    public static void showDetails(final int cid, final String isbn) {
         Connector con = null;
         try {
             con = new Connector();
@@ -132,13 +133,12 @@ public class Book {
             return ;
         }
 
-        String sql = "SELECT * FROM Book B JOIN Publisher P ON B.pid = P.pid " +
-                "JOIN Author A ON B.authid = A.authid WHERE isbn = " + isbn;
+        String sql = "SELECT * FROM Book B NATURAL JOIN Publisher P NATURAL JOIN Author A"
+                        + " WHERE isbn = " + isbn;
 
         ResultSet rs = null;
         try {
             rs = con.stmt.executeQuery(sql);
-            rs.next();
         } catch(Exception e) {
             System.out.println("Failed to get details");
             System.err.println(e.getMessage());
@@ -146,17 +146,35 @@ public class Book {
         }
 
         try {
+            rs.next();
             System.out.format("|-Title : %s\n", rs.getString("title"));
             System.out.format("|-ISBN : %s\n", rs.getString("isbn"));
-            System.out.format("|-Author : %s\n", rs.getString("A.name"));
+            //System.out.format("|-Author : %s\n", rs.getString("A.name"));
             //System.out.format("Translator : %s\n", rs.getString("translator"));
-            System.out.format("|-Publisher : %s\n", rs.getString("P.name"));
-            System.out.format("|-Year : %d\n", rs.getInt("year"));
+            System.out.format("|-Publisher : %s\n", rs.getString("P.pubname"));
+            System.out.format("|-Pubdate : %s\n", rs.getString("pubdate"));
             System.out.format("|-Format : %s\n", rs.getString("format"));
             System.out.format("|-Price : %f\n", rs.getFloat("price"));
             System.out.format("|-Copies : %d\n", rs.getInt("copies"));
         } catch (Exception e) {
             System.out.println("Failed to print details");
+            System.err.println(e.getMessage());
+        }
+
+        sql = "SELECT * FROM WrittenBy W NATURAL JOIN Author WHERE W.isbn = '" + isbn + "'";
+        //System.err.println(sql);
+        try {
+            rs = con.stmt.executeQuery(sql);
+        } catch(Exception e) {
+            System.out.println("Failed to get author(s)");
+            System.err.println(e.getMessage());
+        }
+        try {
+            while(rs.next()) {
+                System.out.format("|-Author : %s\n", rs.getString("authname"));
+            }
+        } catch (Exception e) {
+            System.out.println("Failed to print author(s)");
             System.err.println(e.getMessage());
         }
 
@@ -219,8 +237,8 @@ public class Book {
             }
             while ((title = in.readLine()) == null || title.length() == 0);
 
-            Author author = new Author();
-            while((authid = author.choose()) == -1);
+//            Author author = new Author();
+//            while((authid = author.choose()) == -1);
 
             Publisher publisher = new Publisher();
             while((pid = publisher.choose()) == -1);
@@ -248,8 +266,8 @@ public class Book {
         }
 
         try {
-            String sql = "INSERT INTO Book (isbn, title, authid, pid, copies, price, format) VALUES ";
-            sql += "(" + isbn + ",'" + title + "'," + authid + "," + pid + "," + copies + "," + price + ",";
+            String sql = "INSERT INTO Book (isbn, title, pid, copies, price, format) VALUES ";
+            sql += "('" + isbn + "','" + title + "'," + pid + "," + copies + "," + price + ",";
             if(format != null && format.length() > 0) sql += "'" + format + "'"; else sql += "null";
             sql += ")";
             System.err.println(sql);
@@ -261,13 +279,53 @@ public class Book {
             System.err.println(e.getMessage());
             return;
         }
+
+        try {
+            Author.writtenBy(isbn);
+        } catch (Exception e) {
+            System.out.println("Failed to add authors");
+            System.err.println(e.getMessage());
+        }
     }
 
     public static void editDetailsDesc() {
         System.out.println("Edit details for a book");
     }
 
-    public static void editDetails(int cid, long isbn) {
+    public static void editDetails(int cid, String isbn) {
 
+    }
+
+    public static void replenishDesc() {
+        System.out.println("Arrival of more copies");
+    }
+
+    public static void replenish() {
+        int num = 0;
+        String isbn;
+
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+
+            System.out.println("Please enter isbn : ");
+            isbn = in.readLine();
+
+            System.out.println("Please enter the amount of new copies : ");
+            num = Integer.parseInt(in.readLine());
+        } catch (Exception e) {
+            System.out.println("Failed to read amount");
+            System.err.println(e.getMessage());
+            return;
+        }
+
+        try {
+            String sql = "UPDATE Book SET copies = copies + " + num + " WHERE isbn = '" + isbn + "'";
+            Connector con = new Connector();
+            con.stmt.execute(sql);
+        } catch(Exception e) {
+            System.out.println("Failed to update the amount");
+            System.err.println(e.getMessage());
+            return ;
+        }
     }
 }

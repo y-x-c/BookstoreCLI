@@ -15,13 +15,13 @@ import java.util.TreeMap;
 
 public class Order {
 
-    public static TreeMap<Long, Integer> itemList = new TreeMap<Long, Integer>();
+    public static TreeMap<String, Integer> itemList = new TreeMap<String, Integer>();
 
     public static void buyNowDesc() {
         System.out.println("Buy it now!");
     }
 
-    public static void buyNow(final int cid, final long isbn) {
+    public static void buyNow(final int cid, final String isbn) {
 
     }
 
@@ -29,7 +29,7 @@ public class Order {
         System.out.println("Add it into the cart");
     }
 
-    public static void add2Cart(final int cid, final long isbn) {
+    public static void add2Cart(final int cid, final String isbn) {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         String amount = null;
 
@@ -38,9 +38,9 @@ public class Order {
             while ((amount = in.readLine()) == null || amount.length() == 0) ;
 
             Integer oldAmount = 0;
-            oldAmount = itemList.get(new Long(isbn));
+            oldAmount = itemList.get(isbn);
             Integer newAmount = (oldAmount == null ? 0 : oldAmount) + new Integer(amount);
-            itemList.put(new Long(isbn), newAmount);
+            itemList.put(isbn, newAmount);
         } catch(Exception e) {
             System.err.println(e.getMessage());
             return ;
@@ -92,7 +92,7 @@ public class Order {
         };
 
         int i = 0;
-        for(final Map.Entry<Long, Integer> entry : itemList.entrySet()) {
+        for(final Map.Entry<String, Integer> entry : itemList.entrySet()) {
             menuItems[i++] = new MenuItem() {
                 @Override
                 public void showDesc() {
@@ -110,11 +110,11 @@ public class Order {
         menuDisplay.choose(menuItems);
     }
 
-    public static void editItemDesc(final Long isbn, final Integer amount, final float price) {
+    public static void editItemDesc(final String isbn, final Integer amount, final float price) {
         System.out.println();
     }
 
-    public static void editItem(final int cid, final Long isbn, final Integer amount, final float price) {
+    public static void editItem(final int cid, final String isbn, final Integer amount, final float price) {
 
     }
 }

@@ -8,22 +8,39 @@ import java.util.ArrayList;
  * Created by Orthocenter on 5/14/15.
  */
 public class Author {
-    public static int choose() {
-        int i = 0;
+    public static void writtenBy(String isbn) {
+        while(true) {
+            int i = 0;
 
-        System.out.format("%3d : ", i++);
-        System.out.println("Search an author");
-        System.out.format("%3d : ", i++);
-        System.out.println("Add an author");
-        System.out.format("%3d : ", i++);
-        System.out.println("Return");
+            System.out.format("%3d : ", i++);
+            System.out.println("Search an existing author");
+            System.out.format("%3d : ", i++);
+            System.out.println("Add a new author");
+            System.out.format("%3d : ", i++);
+            System.out.println("Return");
 
-        int c = Utility.getChoice(3);
+            int c = Utility.getChoice(3);
 
-        if(c == 0) return search();
-        if(c == 1) return add();
+            int authid = c;
 
-        return -1;
+            if (c == 0)
+                authid = search();
+            else if (c == 1)
+                authid = add();
+            else return;
+
+            String sql = "INSERT INTO WrittenBy (isbn, authid) VALUES (";
+            sql += "'" + isbn + "'," + authid + ")";
+            System.err.println(sql);
+
+            try {
+                Connector con = new Connector();
+                con.stmt.executeUpdate(sql);
+            } catch(Exception e) {
+                System.out.println("Cannot add to relation WrittenBy");
+                System.err.println(e.getMessage());
+            }
+        }
     }
 
     public static int search() {
@@ -41,8 +58,8 @@ public class Author {
             return -1;
         }
 
-        String sql = "SELECT A.name, B.title, A.authid FROM Author A " +
-                "JOIN Book B ON A.authid = B.authid WHERE A.name LIKE";
+        String sql = "SELECT A.authname, A.authid, A.intro FROM Author A " +
+                "WHERE A.authname LIKE";
         sql += "'%" + name + "%'";
         sql += " GROUP BY A.authid";
 
@@ -55,7 +72,7 @@ public class Author {
 
             while(rs.next()) {
                 System.out.format("%3d : ", i++);
-                System.out.format("%s %s\n", rs.getString("A.name"), rs.getString("B.title"));
+                System.out.format("%s %s\n", rs.getString("A.authname"), Utility.getShortString(rs.getString("A.intro"), 50));
                 authids.add(new Integer(rs.getInt("A.authid")));
             }
         } catch (Exception e) {
