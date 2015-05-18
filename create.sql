@@ -108,7 +108,8 @@ CREATE TABLE Address(
     city VARCHAR(50),
     state VARCHAR(50),
     country VARCHAR(50),
-    phone VARCHAR(50),
+    rphone VARCHAR(50),
+    rname VARCHAR(50),
     PRIMARY KEY (addrid, cid),
     FOREIGN KEY (cid) REFERENCES Customer(cid)
 ) CHARACTER SET utf8;

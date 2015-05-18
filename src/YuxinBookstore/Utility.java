@@ -32,6 +32,7 @@ public class Utility {
     }
 
     public static String getShortString(String str, int bound) {
+        if(str == null) return "null";
         String ret = "";
         if(str.length() > bound) {
             ret = str.substring(bound) + "...";
@@ -61,5 +62,10 @@ public class Utility {
 
     public static String sanitize(String str) {
         return str;
+    }
+
+    public static String genStringAttr(String str, String separator) {
+        if(str == null || str.length() == 0) return "null" + separator;
+        return "'" + str + "'" + separator;
     }
 }

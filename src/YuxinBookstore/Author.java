@@ -8,30 +8,36 @@ import java.util.ArrayList;
  * Created by Orthocenter on 5/14/15.
  */
 public class Author {
+    public static int choose() {
+        int i = 0;
+
+        System.out.format("%3d : ", i++);
+        System.out.println("Search an existing author");
+        System.out.format("%3d : ", i++);
+        System.out.println("Add a new author");
+        System.out.format("%3d : ", i++);
+        System.out.println("Return");
+
+        int c = Utility.getChoice(3);
+
+        if (c == 0)
+            return search();
+        else if (c == 1)
+            return add();
+
+        return -2;
+    }
+
     public static void writtenBy(String isbn) {
+        int i = 0;
         while(true) {
-            int i = 0;
+            int authid = choose();
 
-            System.out.format("%3d : ", i++);
-            System.out.println("Search an existing author");
-            System.out.format("%3d : ", i++);
-            System.out.println("Add a new author");
-            System.out.format("%3d : ", i++);
-            System.out.println("Return");
-
-            int c = Utility.getChoice(3);
-
-            int authid = c;
-
-            if (c == 0)
-                authid = search();
-            else if (c == 1)
-                authid = add();
-            else return;
+            if(i > 0 && authid == -2) return;
 
             String sql = "INSERT INTO WrittenBy (isbn, authid) VALUES (";
             sql += "'" + isbn + "'," + authid + ")";
-            System.err.println(sql);
+            //System.err.println(sql);
 
             try {
                 Connector con = Bookstore.con;
@@ -45,6 +51,8 @@ public class Author {
                 System.out.println("Cannot add to relation WrittenBy");
                 System.err.println(e.getMessage());
             }
+
+            i++;
         }
     }
 
@@ -67,6 +75,7 @@ public class Author {
                 "WHERE A.authname LIKE";
         sql += "'%" + name + "%'";
         sql += " GROUP BY A.authid";
+        System.err.println(sql);
 
         ArrayList<Integer> authids = new ArrayList<Integer>();
 
@@ -83,7 +92,7 @@ public class Author {
             while(rs.next()) {
                 System.out.format("%3d : ", i++);
                 System.out.format("%s %s\n", rs.getString("A.authname"), Utility.getShortString(rs.getString("A.intro"), 50));
-                authids.add(new Integer(rs.getInt("A.authid")));
+                authids.add(rs.getInt("A.authid"));
             }
         } catch (Exception e) {
             System.out.println("Failed to search author");
@@ -94,7 +103,7 @@ public class Author {
         authids.add(new Integer(-1));
         int c = Utility.getChoice(authids.size() + 1);
 
-        return authids.get(c).intValue(); // should I handle exception here?
+        return authids.get(c); // should I handle exception here?
     }
 
     public static int add() {
@@ -114,6 +123,7 @@ public class Author {
 
         String sql = "INSERT INTO Author (authname) VALUES";
         sql += "('" + name + "')";
+        System.err.println(sql);
 
         try {
             Connector con = Bookstore.con;
@@ -122,12 +132,13 @@ public class Author {
             } catch(Exception e) {
                 return -1;
             }
-            con.stmt.executeUpdate(sql);
+            con.stmt.execute(sql);
 
-            sql = "SELECT * FROM Author WHERE authname = '" + name + "'" + " ORDER BY authid DESC";
+            //sql = "SELECT * FROM Author WHERE authname = '" + name + "'" + " ORDER BY authid DESC";
+            sql = "SELECT LAST_INSERT_ID()";
             ResultSet rs = con.stmt.executeQuery(sql);
             rs.next();
-            return rs.getInt("authid");
+            return rs.getInt(1);
         } catch (Exception e) {
             System.out.println("Failed to add author");
             System.err.println(e.getMessage());
@@ -206,12 +217,18 @@ public class Author {
 
     public static void showPopularAuthors() {
         int m;
+        String st, ed;
 
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
             System.out.println("Please enter the amount of the most popular authors you want to see");
             m = Integer.parseInt(in.readLine());
+
+            System.out.println("Please enter the start time: ");
+            st = in.readLine();
+            System.out.println("Please enter the end time: ");
+            ed = in.readLine();
         } catch(Exception e) {
             System.out.println("Failed to read");
             System.err.println(e.getMessage());
@@ -219,9 +236,9 @@ public class Author {
         }
 
         try {
-            String sql = "SELECT W.authid, SUM(I.amount) as sales FROM ItemInOrder I, WrittenBy W " +
-                    "WHERE I.isbn = W.isbn " +
-                    "GROUP BY W.authid ORDER BY SUM(I.amount) DESC";
+            String sql = "SELECT W.authid, SUM(I.amount) as sales FROM ItemInOrder I, WrittenBy W, Orders O " +
+                    "WHERE I.isbn = W.isbn AND O.orderid = I.orderid AND O.time >= '" + st + "' AND O.time <= '" + ed +
+                    "' GROUP BY W.authid ORDER BY SUM(I.amount) DESC";
 
             Connector con = Bookstore.con;
             try {

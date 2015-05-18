@@ -6,7 +6,10 @@ package YuxinBookstore;
 
 import java.io.*;
 import java.sql.ResultSet;
+import java.sql.Time;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Timer;
 
 
 public class Book {
@@ -369,8 +372,7 @@ public class Book {
             }
             while ((title = in.readLine()) == null || title.length() == 0);
 
-            Publisher publisher = new Publisher();
-            while((pid = publisher.choose()) == -1);
+            pid = Publisher.choose();
 
             do {
                 System.out.print("Please enter copies : ");
@@ -474,12 +476,18 @@ public class Book {
 
     public static void showPopularBooks() {
         int m;
+        String st, ed;
 
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
             System.out.println("Please enter the amount of the most popular books you want to see");
             m = Integer.parseInt(in.readLine());
+
+            System.out.println("Please enter the start time: ");
+            st = in.readLine();
+            System.out.println("Please enter the end time: ");
+            ed = in.readLine();
         } catch(Exception e) {
             System.out.println("Failed to read");
             System.err.println(e.getMessage());
@@ -487,7 +495,10 @@ public class Book {
         }
 
         try {
-            String sql = "SELECT isbn, SUM(amount) as sales FROM ItemInOrder GROUP BY isbn ORDER BY SUM(amount) DESC";
+            String sql = "SELECT isbn, SUM(amount) as sales FROM ItemInOrder I, Orders O " +
+                    "WHERE I.orderid = O.orderid AND O.time >= '" + st + "' AND O.time <= '" + ed +
+                    "' GROUP BY isbn ORDER BY SUM(amount) DESC";
+            System.err.println(sql);
 
             Connector con = Bookstore.con;
             ResultSet rs = con.stmt.executeQuery(sql);

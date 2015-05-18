@@ -109,6 +109,8 @@ public class Order {
                 System.out.format("Title: %s  Price: %f  ISBN: %s  Amount: %d\n", rs.getString("B.title"),
                         rs.getFloat("B.price"), rs.getString("isbn"), rs.getInt("C.amount"));
             }
+
+            //TBD
         } catch (Exception e) {
             System.out.println("Failed to query");
             System.err.println(e.getMessage());
@@ -161,14 +163,14 @@ public class Order {
             rs.next();
 
             System.out.format("|--Username : %s\n", rs.getString("username"));
-            System.out.format("|--Name : %s\n", rs.getString("name"));
 
             sql = "SELECT * FROM Address A WHERE addrid = " + addrid;
             rs = con.stmt.executeQuery(sql);
             rs.next();
 
             System.out.format("|--Address : %s\n", Utility.getFullAddress(rs));
-            System.out.format("|--Receiver Phone : %s\n", rs.getString("phone"));
+            System.out.format("|--Receiver's Name : %s\n", rs.getString("rname"));
+            System.out.format("|--Receiver's Phone : %s\n", rs.getString("rphone"));
 
             sql = "SELECT * FROM ItemInOrder I, Book B WHERE orderid = " + orderid +
                 " AND I.isbn = B.isbn";
@@ -310,7 +312,7 @@ public class Order {
         }
 
         //TBD
-        int addrid = 1;
+        int addrid = Address.choose(cid);
 
         // modify amount and record order
         try {

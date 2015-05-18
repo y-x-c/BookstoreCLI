@@ -71,7 +71,7 @@ public class Customer {
                 System.out.println("Logged in!");
                 userhomeMenu(cid);
             } else
-                System.err.println("Failed");
+                System.out.println("Failed");
 
         } catch(Exception e) {
             e.printStackTrace();
