@@ -213,12 +213,12 @@ public class Customer {
                 new MenuItem() {
                     @Override
                     public void showDesc() {
-                        Feedback.recordDesc();
+                        Feedback.recordMenuDesc();
                     }
 
                     @Override
                     public void run() {
-                        Feedback.record(cid);
+                        Feedback.recordMenu(cid);
                     }
                 },
                 new MenuItem() {
@@ -246,12 +246,12 @@ public class Customer {
                 new MenuItem() {
                     @Override
                     public void showDesc() {
-                        Feedback.showFeedbacksDesc();
+                        Feedback.showFeedbacksMenuDesc();
                     }
 
                     @Override
                     public void run() {
-                        Feedback.showFeedbacks();
+                        Feedback.showFeedbacksMenu();
                     }
                 },
                 new MenuItem() {

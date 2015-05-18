@@ -9,17 +9,15 @@ import java.sql.ResultSet;
 
 public class Feedback {
     public static void recordDesc() {
-        System.out.println("Record your record for a book");
+        System.out.println("Record your feedback for a book");
     }
 
-    public static void record(int cid) {
-        String isbn;
+    public static void record(final int cid, final String isbn) {
         int score = 0;
         String comment;
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+
         try {
-            System.out.println("Please enter isbn : ");
-            isbn = in.readLine();
             System.out.println("Please enter score(1 - 10) : ");
             score = Integer.parseInt(in.readLine());
             System.out.println("Please enter your comment(optional) : ");
@@ -50,6 +48,26 @@ public class Feedback {
             System.err.println(e.getMessage());
             return;
         }
+    }
+
+    public static void recordMenuDesc() {
+        System.out.println("Record your feedback for a given book");
+    }
+
+    public static void recordMenu(final int cid) {
+        String isbn;
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        try {
+            System.out.println("Please enter isbn : ");
+            isbn = in.readLine();
+        } catch(Exception e) {
+            System.out.println("Failed to read feedback information");
+            System.err.println(e.getMessage());
+            return;
+        }
+
+        record(cid, isbn);
     }
 
     public static void assessFeedbackDesc() {
@@ -112,25 +130,10 @@ public class Feedback {
     }
 
     public static void showFeedbacksDesc() {
-        System.out.println("Show feedbacks for a given book");
+        System.out.println("Show feedbacks related to this book");
     }
 
-    public static void showFeedbacks() {
-        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        int m;
-        String isbn;
-
-        try {
-            System.out.println("Please enter the isbn : ");
-            isbn = in.readLine();
-            System.out.println("The amount of the most useful feedbacks you want to see : ");
-            m = Integer.parseInt(in.readLine());
-        } catch (Exception e) {
-            System.out.println("Failed to read");
-            System.err.println(e.getMessage());
-            return;
-        }
-
+    public static void showFeedbacks(final String isbn, int m) {
         try {
             String sql = "SELECT C.username, F.score, F.comment, (SELECT SUM(U.rating) FROM Usefulness U WHERE U.fid = F.fid) AS usefulness FROM Feedback F NATURAL JOIN Customer C WHERE isbn = '" + isbn + "'";
             sql += " ORDER BY (SELECT SUM(U.rating) FROM Usefulness U WHERE U.fid = F.fid) DESC";
@@ -153,5 +156,28 @@ public class Feedback {
             System.err.println(e.getMessage());
             return;
         }
+    }
+
+    public static void showFeedbacksMenuDesc() {
+        System.out.println("Show feedbacks for a given book");
+    }
+
+    public static void showFeedbacksMenu() {
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        int m;
+        String isbn;
+
+        try {
+            System.out.println("Please enter the isbn : ");
+            isbn = in.readLine();
+            System.out.println("The amount of the most useful feedbacks you want to see : ");
+            m = Integer.parseInt(in.readLine());
+        } catch (Exception e) {
+            System.out.println("Failed to read");
+            System.err.println(e.getMessage());
+            return;
+        }
+
+        showFeedbacks(isbn, m);
     }
 }
