@@ -58,4 +58,8 @@ public class Utility {
 
         return ret;
     }
+
+    public static String sanitize(String str) {
+        return str;
+    }
 }

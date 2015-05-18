@@ -10,15 +10,25 @@ import java.util.ArrayList;
 
 
 public class Book {
-    public static void searchMenuDesc() {
-        System.out.println("Search books");
-    }
 
-    public static ResultSet search(String conditions, int orderBy) {
+    public static ResultSet search(String conditions) {
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         Connector con = Bookstore.con;
         try {
             con.newStatement();
         } catch(Exception e) {
+            return null;
+        }
+
+        int orderBy = 0;
+        try {
+            System.out.println("Sort by year(ASC 0, DESC 1), \n" +
+                    "or by the average numerical score of the feedbacks(ASC 2, DESC 3), \n" +
+                    "or by the average numerical score of the trusted user feedbacks(ASC 4, DESC 5) :");
+            orderBy = Integer.parseInt(in.readLine());
+        } catch(Exception e) {
+            System.out.println("Failed to get ordering manner");
+            System.err.println(e.getMessage());
             return null;
         }
 
@@ -54,73 +64,56 @@ public class Book {
         }
     }
 
-    public static int countSearchResult(String conditions) {
-        Connector con = Bookstore.con;
-        try {
-            con.newStatement();
-        } catch(Exception e) {
-            return -1;
-        }
-
-        String sql = "SELECT COUNT(*) FROM Book B NATURAL JOIN Publisher P NATURAL JOIN WrittenBy W NATURAL JOIN Author A WHERE ";
-        sql += conditions;
-        sql += " GROUP BY B.isbn ";
-        //System.out.println(sql);
-
-        try {
-            ResultSet rs = con.stmt.executeQuery(sql);
-            rs.next();
-            return rs.getInt(1);
-        } catch(Exception e) {
-            System.out.println("Query failed");
-            System.err.println(e.getMessage());
-            return 0;
-        }
+    public static void simpleSearchMenuDesc() {
+        System.out.println("Simple book search");
     }
 
-    public static void searchMenu(final boolean forEdit, final int cid) {
+    public static void simpleSearchMenu(final int cid) {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        String conditions;
-        int orderBy = 0;
+        String conditions = "";
 
         try {
-            do {
-                System.out.print("Please enter search conditions : ");
+            System.out.print("Please enter keywords in one line split by space (title, author, summary, etc.) : ");
+            String _keyWords = in.readLine();
+            String[] keyWords = _keyWords.split(" ");
+
+            conditions += "true" ;
+
+            for(String keyWord : keyWords) {
+                conditions += " AND (" + "title LIKE '%" + keyWord + "%' OR authname like '%" + keyWord +
+                        "%' OR summary LIKE '%" + keyWord + "%' OR pubname LIKE '%" + keyWord + "%'" + ") ";
             }
-            while ((conditions = in.readLine()) == null || conditions.length() == 0);
 
-            System.out.println("Sort by year(ASC 0, DESC 1), \n" +
-                    "or by the average numerical score of the feedbacks(ASC 2, DESC 3), \n" +
-                    "or by the average numerical score of the trusted user feedbacks(ASC 4, DESC 5) :");
-            orderBy = Integer.parseInt(in.readLine());
+            ResultSet rs = search(conditions);
 
-            ResultSet rs = search(conditions, orderBy);
-            int cnt = countSearchResult(conditions);
+            ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
 
-            MenuItem[] menuItems = new MenuItem[cnt + 1];
-
-            menuItems[cnt] = new MenuItem() {
-                public void showDesc() { System.out.println("Return"); }
-                public void run() { return; }
-            };
-
-            rs.next();
-            for(int i = 0; i < cnt; i++, rs.next()) {
+            while (rs.next()) {
                 final String row = rs.getString("title") + " " + rs.getString("price") + " "
                         + rs.getString("A.authname") + " " + rs.getString("isbn");
                 final String isbn = rs.getString("isbn");
 
-                MenuItem menuItem = new MenuItem() {
+                menuItems.add(new MenuItem() {
                     public void showDesc() {
                         showDetailsDesc(row);
                     }
-                    public void run() {
-                        if(!forEdit) showDetails(cid, isbn); else editDetails(cid, isbn);
-                    }
-                };
 
-                menuItems[i] = menuItem;
+                    public void run() {
+                        showDetails(cid, isbn);
+                    }
+                });
             }
+
+            menuItems.add(new MenuItem() {
+                public void showDesc() {
+                    System.out.println("Return");
+                }
+
+                public void run() {
+                    return;
+                }
+            });
+
             MenuDisplay menuDisplay = new MenuDisplay();
             menuDisplay.choose(menuItems);
 
@@ -130,10 +123,6 @@ public class Book {
             System.out.println("Failed to print search result");
             System.err.println(e.getMessage());
         }
-    }
-
-    public static void searchMenu(final int cid) {
-        searchMenu(false, cid);
     }
 
     public static void showDetailsDesc(final String row) {

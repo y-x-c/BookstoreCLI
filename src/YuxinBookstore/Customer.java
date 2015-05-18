@@ -63,13 +63,6 @@ public class Customer {
 
             ResultSet rs = con.stmt.executeQuery(sql);
             ResultSetMetaData rsmd = rs.getMetaData();
-//            int numCols = rsmd.getColumnCount();
-//            while (rs.next())
-//            {
-//                for (int i=1; i<=numCols;i++)
-//                    System.out.print(rs.getString(i)+"  ");
-//            }
-//            System.out.println("");
 
             if(rs.next()) {
                 int cid;
@@ -205,8 +198,8 @@ public class Customer {
 
         MenuItem[] menuItems = new MenuItem[] {
                 new MenuItem() {
-                    public void showDesc() { book.searchMenuDesc(); }
-                    public void run() { book.searchMenu(cid); }
+                    public void showDesc() { book.simpleSearchMenuDesc(); }
+                    public void run() { book.simpleSearchMenu(cid); }
                 },
                 new MenuItem() {
                     @Override
