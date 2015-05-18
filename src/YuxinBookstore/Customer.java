@@ -194,12 +194,21 @@ public class Customer {
     }
 
     public static void userhomeMenu(final int cid) {
-        final Book book = new Book();
-
         MenuItem[] menuItems = new MenuItem[] {
                 new MenuItem() {
-                    public void showDesc() { book.simpleSearchMenuDesc(); }
-                    public void run() { book.simpleSearchMenu(cid); }
+                    public void showDesc() { Book.simpleSearchMenuDesc(); }
+                    public void run() { Book.simpleSearchMenu(cid); }
+                },
+                new MenuItem() {
+                    @Override
+                    public void showDesc() {
+                        Book.advancedSearchDesc();
+                    }
+
+                    @Override
+                    public void run() {
+                        Book.advancedSearch(cid);
+                    }
                 },
                 new MenuItem() {
                     @Override

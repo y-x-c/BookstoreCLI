@@ -81,7 +81,8 @@ public class Book {
 
             for(String keyWord : keyWords) {
                 conditions += " AND (" + "title LIKE '%" + keyWord + "%' OR authname like '%" + keyWord +
-                        "%' OR summary LIKE '%" + keyWord + "%' OR pubname LIKE '%" + keyWord + "%'" + ") ";
+                        "%' OR summary LIKE '%" + keyWord + "%' OR pubname LIKE '%" + keyWord +
+                        "%' OR keyword LIKE '%" + keyWord + "%' OR subject LIKE '%" + keyWord + "%'" +  ") ";
             }
 
             ResultSet rs = search(conditions);
@@ -122,6 +123,100 @@ public class Book {
         } catch (Exception e) {
             System.out.println("Failed to print search result");
             System.err.println(e.getMessage());
+        }
+    }
+
+    public static void advancedSearchDesc() {
+        System.out.println("Advanced Search");
+    }
+
+    public static void advancedSearch(final int cid) {
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        String conditions = "";
+
+        try {
+
+            while (true) {
+                int choice;
+
+                if(conditions.length() != 0) {
+                    System.out.println("(0) search now");
+                    System.out.println("(1) AND; (2) OR");
+
+                    choice = Integer.parseInt(in.readLine());
+
+                    if (choice == 0)
+                        break;
+                    else if (choice == 1)
+                        conditions += " AND ";
+                    else if (choice == 2)
+                        conditions += " OR ";
+                }
+
+
+                System.out.println("(0) title includes; (1) author includes;");
+                System.out.println("(2) publisher includes; (3) subject includes;");
+
+                choice = Integer.parseInt(in.readLine());
+
+                System.out.println("Includes what? ");
+
+                String included = in.readLine();
+                included = Utility.sanitize(included);
+
+                if(choice == 0)
+                    conditions += " title LIKE '%" + included + "%'";
+                else if(choice == 1)
+                    conditions += " authname LIKE '%" + included + "%'";
+                else if(choice == 2)
+                    conditions += " pubname LIKE '%" + included + "%'";
+                else if(choice == 3)
+                    conditions += " subject LIKE '%" + included + "%'";
+            }
+        } catch(Exception e) {
+            System.out.println("Failed to build conditions");
+            System.err.println(e.getMessage());
+            return;
+        }
+
+
+        try {
+            ResultSet rs = search(conditions);
+
+            ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+
+            while (rs.next()) {
+                final String row = rs.getString("title") + " " + rs.getString("price") + " "
+                        + rs.getString("A.authname") + " " + rs.getString("isbn");
+                final String isbn = rs.getString("isbn");
+
+                menuItems.add(new MenuItem() {
+                    public void showDesc() {
+                        showDetailsDesc(row);
+                    }
+
+                    public void run() {
+                        showDetails(cid, isbn);
+                    }
+                });
+            }
+
+            menuItems.add(new MenuItem() {
+                public void showDesc() {
+                    System.out.println("Return");
+                }
+
+                public void run() {
+                    return;
+                }
+            });
+
+            MenuDisplay menuDisplay = new MenuDisplay();
+            menuDisplay.choose(menuItems);
+        } catch (Exception e) {
+            System.out.println("Failed to print search result");
+            System.err.println(e.getMessage());
+            return;
         }
     }
 
