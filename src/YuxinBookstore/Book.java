@@ -4,11 +4,8 @@ package YuxinBookstore;
  * Created by Orthocenter on 5/12/15.
  */
 
-import javax.xml.transform.Result;
-import java.awt.*;
 import java.io.*;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
 
 
