@@ -264,6 +264,28 @@ public class Customer {
                     }
                 },
                 new MenuItem() {
+                    @Override
+                    public void showDesc() {
+                        Order.showCartDesc();
+                    }
+
+                    @Override
+                    public void run() {
+                        Order.showCart(cid);
+                    }
+                },
+                new MenuItem() {
+                    @Override
+                    public void showDesc() {
+                        Order.confirmOrderDesc();
+                    }
+
+                    @Override
+                    public void run() {
+                        Order.confirmOrder(cid);
+                    }
+                },
+                new MenuItem() {
                     public void showDesc() { System.out.println("Return"); }
                     public void run() { return; }
                 }

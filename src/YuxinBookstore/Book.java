@@ -200,14 +200,14 @@ public class Book {
             final Order order = new Order();
 
             MenuItem[] menuItems = new MenuItem[] {
-                new MenuItem() {
-                    public void showDesc() {
-                        order.buyNowDesc();
-                    }
-                    public void run() {
-                        order.buyNow(cid, isbn);
-                    }
-                },
+//                new MenuItem() {
+//                    public void showDesc() {
+//                        order.buyNowDesc();
+//                    }
+//                    public void run() {
+//                        order.buyNow(cid, isbn);
+//                    }
+//                },
                 new MenuItem() {
                     public void showDesc() {
                         order.add2CartDesc();

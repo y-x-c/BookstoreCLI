@@ -276,4 +276,84 @@ public class Order {
             return;
         }
     }
+
+    public static void confirmOrderDesc() {
+        System.out.println("Confirm your order");
+    }
+
+    public static void confirmOrder(final int cid) {
+        Connector con = Bookstore.con;
+        try {
+            con.newStatement();
+        } catch(Exception e) {
+            System.out.println("Failed to create new statement");
+            System.err.println(e.getMessage());
+            return;
+        }
+
+        // check available amount
+        try {
+            String sql = "SELECT B.isbn, B.title FROM Book B, Cart C WHERE C.cid = " + cid +
+                    " AND B.isbn = C.isbn AND B.copies < C.amount" ;
+            System.err.println(sql);
+            ResultSet rs = con.stmt.executeQuery(sql);
+
+            if(rs.next()) {
+                System.out.print("No enough books ");
+                System.out.println(rs.getString("title"));
+                return;
+            }
+        } catch(Exception e) {
+            System.out.println("Failed to check amount limitation");
+            System.err.println(e.getMessage());
+            return;
+        }
+
+        //TBD
+        int addrid = 1;
+
+        // modify amount and record order
+        try {
+            con.con.setAutoCommit(false);
+
+            String sql = "UPDATE Book SET copies = copies - " +
+                    "(SELECT C.amount FROM Cart C WHERE Book.isbn = C.isbn AND C.cid = " + cid + ") " +
+                    "WHERE Book.isbn IN (SELECT C.isbn FROM Cart C WHERE C.cid = " + cid + ")";
+            System.err.println(sql);
+            con.stmt.addBatch(sql);
+
+            sql = "INSERT INTO Orders (time, cid, addrid) VALUES (NOW(), " + cid + "," + addrid + ")";
+            System.err.println(sql);
+            con.stmt.addBatch(sql);
+
+            sql = "INSERT INTO ItemInOrder (orderid, isbn, price, amount) " +
+                    "SELECT LAST_INSERT_ID(), C.isbn, B.price, C.amount FROM Cart C, Book B WHERE " +
+                    "C.isbn = B.isbn AND C.cid = " + cid;
+            System.err.println(sql);
+            con.stmt.addBatch(sql);
+
+            sql = "DELETE FROM Cart WHERE cid = " + cid;
+            System.err.println(sql);
+            con.stmt.addBatch(sql);
+
+            con.stmt.executeBatch();
+        } catch(Exception e) {
+            System.out.println("Failed to update");
+            System.err.println(e.getMessage());
+
+            try {
+                con.con.rollback();
+            } catch(Exception e2) {
+                System.out.println("Failed to roll back");
+                System.err.println(e2);
+            }
+        } finally {
+            try {
+                con.con.setAutoCommit(true);
+            } catch(Exception e3) {
+                System.err.println(e3);
+            }
+        }
+
+    }
 }
