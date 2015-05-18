@@ -1,6 +1,7 @@
 package YuxinBookstore;
 
 import javax.xml.transform.Result;
+import java.awt.*;
 import java.io.*;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -152,8 +153,8 @@ public class Order {
             System.out.format("|--Order id : %d\n", rs.getInt("orderid"));
             System.out.format("|--Time : %s\n", rs.getString("time"));
 
-            int cid = rs.getInt("cid");
-            int addrid = rs.getInt("addrid");
+            final int cid = rs.getInt("cid");
+            final int addrid = rs.getInt("addrid");
 
             sql = "SELECT * FROM Customer C WHERE cid = " + cid;
             rs = con.stmt.executeQuery(sql);
@@ -175,16 +176,48 @@ public class Order {
 
             int i = 0;
             float totalPrices = 0;
+            ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
             while(rs.next()) {
-                System.out.format("|--Item %d: \n", i++);
-                System.out.format("|----Title : %s\n", rs.getString("B.title"));
-                System.out.format("|----Price : %f\n", rs.getFloat("I.price"));
-                System.out.format("|----ISBN  : %s\n", rs.getString("B.isbn"));
-                System.out.format("|----Amount : %d\n", rs.getInt("I.amount"));
+                String row = "";
+                row += "Item " + i++ + ", ";
+                row += "Title: " + rs.getString("B.title") + ", ";
+                row += "Price: " + rs.getString("I.price") + ", ";
+                row += "ISBN: " + rs.getString("B.isbn") + ", ";
+                row += "Amount: " + rs.getString("I.amount");
+
+                final String _row = row;
+                final String isbn = rs.getString("B.isbn");
+
+                menuItems.add(new MenuItem() {
+                    @Override
+                    public void showDesc() {
+                        Book.showDetailsDesc(_row);
+                    }
+
+                    @Override
+                    public void run() {
+                        Book.showDetails(cid, isbn);
+                    }
+                });
+
                 totalPrices += rs.getFloat("I.price") * rs.getInt("I.amount");
             }
 
+            menuItems.add(new MenuItem() {
+                @Override
+                public void showDesc() {
+                    System.out.println("Return");
+                }
+
+                @Override
+                public void run() {
+                    return;
+                }
+            });
+
             System.out.format("|--Total Prices : %f\n", totalPrices);
+
+            MenuDisplay.choose(menuItems, false);
         } catch(Exception e) {
             System.out.println("Failed to print order details");
             System.err.println(e.getMessage());

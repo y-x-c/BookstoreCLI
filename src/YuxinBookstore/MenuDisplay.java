@@ -29,15 +29,17 @@ public class MenuDisplay {
         }
     }
 
-    public static void choose(MenuItem[] menuItems) {
+    public static void choose(MenuItem[] menuItems, boolean flush) {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         String choice;
         int c = 0;
 
         try {
             while (true) {
-                System.out.print("\u001b[2J");
-                System.out.flush();
+                if(flush) {
+                    System.out.print("\u001b[2J");
+                    System.out.flush();
+                }
                 int i = 0;
                 for(MenuItem item : menuItems) {
                     System.out.format("%3d : ", i++);
@@ -63,15 +65,17 @@ public class MenuDisplay {
         }
     }
 
-    public static void choose(ArrayList<MenuItem> menuItems) {
+    public static void choose(ArrayList<MenuItem> menuItems, boolean flush) {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         String choice;
         int c = 0;
 
         try {
             while (true) {
-                System.out.print("\u001b[2J");
-                System.out.flush();
+                if(flush) {
+                    System.out.print("\u001b[2J");
+                    System.out.flush();
+                }
                 int i = 0;
                 for(MenuItem item : menuItems) {
                     System.out.format("%3d : ", i++);
@@ -97,5 +101,11 @@ public class MenuDisplay {
         }
     }
 
+    public static void choose(ArrayList<MenuItem> menuItems) {
+        choose(menuItems, true);
+    }
 
+    public static void choose(MenuItem[] menuItems) {
+        choose(menuItems, true);
+    }
 }
