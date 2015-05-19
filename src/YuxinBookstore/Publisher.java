@@ -65,17 +65,16 @@ public class Publisher {
         String name = null;
 
         try {
-            do {
-                System.out.print("Please enter publisher's name : ");
-            }
-            while ((name = in.readLine()) == null || name.length() == 0);
+            System.out.print("Please enter publisher's name or publisher's id: ");
+            name = in.readLine();
         } catch(Exception e) {
-            System.out.println("Failed to read publisher's name");
+            System.out.println("Failed to read publisher's name or publisher's id");
             System.err.println(e.getMessage());
             return -1;
         }
 
         String sql = "SELECT P.pubname, B.title, P.pid FROM Publisher P NATURAL JOIN Book B WHERE P.pubname LIKE";
+        name = Utility.sanitize(name);
         sql += "'%" + name + "%'";
         sql += " OR P.pid LIKE '%" + name + "%' ";
         sql += " GROUP BY P.pid";
@@ -218,7 +217,7 @@ public class Publisher {
 
                     @Override
                     public void run() {
-
+                        System.err.println("TBD: SHOW PUBLISHER'S DETAILS");
                     }
                 });
             }

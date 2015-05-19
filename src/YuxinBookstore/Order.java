@@ -428,21 +428,21 @@ public class Order {
             String sql = "UPDATE Book SET copies = copies - " +
                     "(SELECT C.amount FROM Cart C WHERE Book.isbn = C.isbn AND C.cid = " + cid + ") " +
                     "WHERE Book.isbn IN (SELECT C.isbn FROM Cart C WHERE C.cid = " + cid + ")";
-            System.err.println(sql);
+            //System.err.println(sql);
             con.stmt.addBatch(sql);
 
             sql = "INSERT INTO Orders (time, cid, addrid) VALUES (NOW(), " + cid + "," + addrid + ")";
-            System.err.println(sql);
+            //System.err.println(sql);
             con.stmt.addBatch(sql);
 
             sql = "INSERT INTO ItemInOrder (orderid, isbn, price, amount) " +
                     "SELECT LAST_INSERT_ID(), C.isbn, B.price, C.amount FROM Cart C, Book B WHERE " +
                     "C.isbn = B.isbn AND C.cid = " + cid;
-            System.err.println(sql);
+            //System.err.println(sql);
             con.stmt.addBatch(sql);
 
             sql = "DELETE FROM Cart WHERE cid = " + cid;
-            System.err.println(sql);
+            //System.err.println(sql);
             con.stmt.addBatch(sql);
 
             con.stmt.executeBatch();

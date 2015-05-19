@@ -181,6 +181,7 @@ public class Author {
             return -1;
         }
 
+        name = Utility.sanitize(name);
         String sql = "SELECT A.authname, A.authid, A.intro FROM Author A " +
                 "WHERE A.authname LIKE ";
         sql += "'%" + name + "%'";

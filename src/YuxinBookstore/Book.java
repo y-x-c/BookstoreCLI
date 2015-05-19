@@ -123,7 +123,8 @@ public class Book {
 
             conditions += "true" ;
 
-            for(String keyWord : keyWords) {
+            for(String _keyWord : keyWords) {
+                String keyWord = Utility.sanitize(_keyWord);
                 conditions += " AND (" + "title LIKE '%" + keyWord + "%' OR authname like '%" + keyWord +
                         "%' OR summary LIKE '%" + keyWord + "%' OR pubname LIKE '%" + keyWord +
                         "%' OR keyword LIKE '%" + keyWord + "%' OR subject LIKE '%" + keyWord + "%'" +  ") ";
@@ -457,7 +458,7 @@ public class Book {
 
     public static void addBook() {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        String isbn = null, title = null, format = null, price_s = null, copies_s = null;
+        String isbn = null, title = null, format = null, price_s = null, pubdate, copies_s = null, summary;
         int authid, pid;
         float price, copies;
 
@@ -487,9 +488,19 @@ public class Book {
             price = Float.parseFloat(price_s);
 
             do {
+                System.out.print("Please enter publish date : ");
+            }
+            while ((pubdate = in.readLine()) == null || pubdate.length() == 0);
+
+            do {
                 System.out.print("Please enter format(optional) : ");
             }
             while ((format = in.readLine()) == null);
+
+            do {
+                System.out.print("Please enter summary(optional) : ");
+            }
+            while ((summary = in.readLine()) == null);
         } catch(Exception e) {
             System.out.println("Failed to read details");
             System.err.println(e.getMessage());
@@ -497,11 +508,12 @@ public class Book {
         }
 
         try {
-            String sql = "INSERT INTO Book (isbn, title, pid, copies, price, format) VALUES ";
-            sql += "('" + isbn + "','" + title + "'," + pid + "," + copies + "," + price + ",";
+            String sql = "INSERT INTO Book (isbn, title, pid, copies, price, pubdate, format, summary) VALUES ";
+            sql += "('" + isbn + "','" + title + "'," + pid + "," + copies + "," + price + ",'" + pubdate + "',";
             if(format != null && format.length() > 0) sql += "'" + format + "'"; else sql += "null";
+            sql += summary == null ? ", null" : ",'" + summary + "'";
             sql += ")";
-            System.err.println(sql);
+            //System.err.println(sql);
 
             Connector con = Bookstore.con;
             try {

@@ -22,7 +22,7 @@ public class MenuDisplay {
             System.out.print("\u001b[2J");
             System.out.flush();
         } else {
-            System.out.println();
+//            System.out.println();
         }
 
         int width = 0;

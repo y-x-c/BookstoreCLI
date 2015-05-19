@@ -16,7 +16,7 @@ package YuxinBookstore;
 
     public static void displayMenu() {
         ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
-        int[] maxSizes = {30};
+        int[] maxSizes = {35};
         String[] manners = {"c"};
 
         menuItems.add(new MenuItem() {
@@ -43,8 +43,19 @@ package YuxinBookstore;
             }
         });
 
+       System.out.println("   ___             _        _                 \n" +
+               "  / __\\ ___   ___ | | _____| |_ ___  _ __ ___ \n" +
+               " /__\\/// _ \\ / _ \\| |/ / __| __/ _ \\| '__/ _ \\\n" +
+               "/ \\/  \\ (_) | (_) |   <\\__ \\ || (_) | | |  __/\n" +
+               "\\_____/\\___/ \\___/|_|\\_\\___/\\__\\___/|_|  \\___|\n" +
+               "                                              ");
+
+        System.out.println("  ╦ ╦┬ ┬─┐ ┬┬┌┐┌╔═╗┬ ┬┌─┐┌┐┌\n" +
+                "  ╚╦╝│ │┌┴┬┘││││║  ├─┤├┤ │││     13307130248\n" +
+                "   ╩ └─┘┴ └─┴┘└┘╚═╝┴ ┴└─┘┘└┘     May 19 2015");
+
         MenuDisplay menuDisplay = new MenuDisplay();
-        menuDisplay.chooseAndRun(menuItems, null, maxSizes, manners, true);
+        menuDisplay.chooseAndRun(menuItems, null, maxSizes, manners, false);
     }
 
     public static void main(String[] args) {

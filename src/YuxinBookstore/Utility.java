@@ -42,6 +42,16 @@ public class Utility {
         return ret;
     }
 
+    public static String readPassword() throws Exception {
+        Console console = System.console();
+        if (console == null) {
+            throw new Exception("Couldn't get Console instance");
+        }
+
+        char passwordArray[] = console.readPassword();
+        return new String(passwordArray);
+    }
+
     public static String getFullAddress(ResultSet rs) {
         String ret = "";
 
@@ -61,7 +71,11 @@ public class Utility {
     }
 
     public static String sanitize(String str) {
-        return str;
+        return str.replace("\\", "\\\\")
+                .replace("%", "\\%")
+                .replace("_", "\\_")
+                .replace("\'", "\\\'")
+                .replace("\"", "\\\"");
     }
 
     public static String genStringAttr(String str, String separator) {

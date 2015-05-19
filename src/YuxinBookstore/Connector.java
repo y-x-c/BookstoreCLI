@@ -23,7 +23,7 @@ public class Connector {
 			throw(e);
 		}
 
-		System.err.println("Created a new connection");
+		//System.err.println("Created a new connection");
 	}
 
 	public void newStatement() throws Exception {

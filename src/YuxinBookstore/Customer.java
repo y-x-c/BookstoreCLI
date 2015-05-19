@@ -56,7 +56,7 @@ public class Customer {
             do { System.out.print("Please enter your username : "); }
             while ((username = in.readLine()) == null || username.length() == 0) ;
             do { System.out.print("Please enter your password : "); }
-            while ((password = in.readLine()) == null || password.length() == 0) ;
+            while ((password = Utility.readPassword()) == null || password.length() == 0) ;
 
             String sql = "SELECT cid FROM Customer WHERE";
             sql += " username = \"" + username + "\"";
@@ -101,9 +101,9 @@ public class Customer {
             do { System.out.print("Please enter your username : "); }
             while ((username = in.readLine()) == null || username.length() == 0) ;
             do { System.out.print("Please enter your password : "); }
-            while ((password = in.readLine()) == null || password.length() == 0) ;
+            while ((password = Utility.readPassword()) == null || password.length() == 0) ;
             do { System.out.print("Please confirm your password : "); }
-            while ((confirmPassword = in.readLine()) == null || confirmPassword.length() == 0) ;
+            while ((confirmPassword = Utility.readPassword()) == null || confirmPassword.length() == 0) ;
             if(!password.equals(confirmPassword)) {
                 System.out.println("Two passwords are not equal");
                 return;
@@ -318,7 +318,7 @@ public class Customer {
                     "(SELECT COUNT(*) FROM TrustRecords T1 WHERE T1.cid2 = C.cid AND T1.trust = 1) - (SELECT COUNT(*) FROM TrustRecords T2 WHERE T2.cid2 = C.cid AND T2.trust = 0) AS score " +
                     "FROM Customer C ORDER BY " +
                     "score DESC";
-            System.err.println(sql);
+            //System.err.println(sql);
             Connector con = Bookstore.con;
             try {
                 con.newStatement();
@@ -327,9 +327,30 @@ public class Customer {
             }
             ResultSet rs = con.stmt.executeQuery(sql);
 
+            ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+
             while(rs.next() && m-- > 0) {
-                System.out.format("Customer id: %d  Trust score: %d\n", rs.getInt("C.cid"), rs.getInt("score"));
+                final int cid = rs.getInt("C.cid"), score = rs.getInt("score");
+                menuItems.add(new MenuItem() {
+                    @Override
+                    public ArrayList<String> getDescs() {
+                        ArrayList<String> descs = new ArrayList<String>();
+                        descs.add("" + cid);
+                        descs.add("" + score);
+                        return descs;
+                    }
+
+                    @Override
+                    public void run() {
+                        System.err.println("TBD: SHOW CUSTOMER'S DETAILS");
+                    }
+                });
             }
+
+            String[] headers = {"Customer id", "Trust score"};
+            int[] maxSizes = {30, 30};
+
+            MenuDisplay.chooseAndRun(menuItems, headers, maxSizes, null, true);
 
         } catch(Exception e) {
             System.out.println("Failed to query");
@@ -360,7 +381,7 @@ public class Customer {
 
         try {
             String sql = "SELECT cid, AVG(rating) AS avgRating FROM Usefulness U GROUP BY U.cid ORDER BY avgRating DESC";
-            System.err.println(sql);
+            //System.err.println(sql);
             Connector con = Bookstore.con;
             try {
                 con.newStatement();
@@ -369,9 +390,33 @@ public class Customer {
             }
             ResultSet rs = con.stmt.executeQuery(sql);
 
+            ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+
             while(rs.next() && m-- > 0) {
+                final int cid = rs.getInt("cid");
+                final String avg = rs.getString("avgRating");
+
+                menuItems.add(new MenuItem() {
+                    @Override
+                    public ArrayList<String> getDescs() {
+                        ArrayList<String> descs = new ArrayList<String>();
+                        descs.add("" + cid);
+                        descs.add("" + avg);
+                        return descs;
+                    }
+
+                    @Override
+                    public void run() {
+                        System.err.println("TBD: SHOW CUSTOMER DETAILS");
+                    }
+                });
+
                 System.out.format("Customer id: %d  Average usefulness: %f\n", rs.getInt("cid"), rs.getFloat("avgRating"));
             }
+
+            String[] headers = {"Customer's id", "Average usefulnes"};
+            int[] maxSizes = {30, 30};
+            MenuDisplay.chooseAndRun(menuItems, headers, maxSizes, null, true);
 
         } catch(Exception e) {
             System.out.println("Failed to query");
