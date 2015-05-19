@@ -8,24 +8,136 @@ import java.util.ArrayList;
  * Created by Orthocenter on 5/14/15.
  */
 public class Author {
+    public static void showDetails(final int cid, final int authid) {
+        String sql = "SELECT * FROM Author WHERE authid = " + authid;
+        Connector con = Bookstore.con;
+        try {
+            con.newStatement();
+        } catch(Exception e) {
+            System.err.println(e.getMessage());
+            return;
+        }
+
+        try {
+            ResultSet rs = con.stmt.executeQuery(sql);
+            rs.next();
+            final String authname = rs.getString("authname");
+            final String intro = rs.getString("intro");
+
+            ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+            menuItems.add(new MenuItem() {
+                @Override
+                public ArrayList<String> getDescs() {
+                    ArrayList<String> descs = new ArrayList<String>();
+                    descs.add("Author's name");
+                    descs.add(authname);
+                    return descs;
+                }
+
+                @Override
+                public void run() {
+
+                }
+            });
+
+            menuItems.add(new MenuItem() {
+                @Override
+                public ArrayList<String> getDescs() {
+                    ArrayList<String> descs = new ArrayList<String>();
+                    descs.add("Introduction");
+                    descs.add(intro == null ? "" : intro.replace("\n", " "));
+                    return descs;
+                }
+
+                @Override
+                public void run() {
+
+                }
+            });
+
+            int[] maxSizes = {30, 90};
+
+            MenuDisplay.show(menuItems, null, maxSizes, null, true);
+        } catch(Exception e) {
+            System.err.println(e.getMessage());
+            return;
+        }
+
+        try {
+            sql = "SELECT * FROM Book B, WrittenBy W, Author A WHERE B.isbn = W.isbn AND " +
+                    " W.authid = A.authid AND A.authid = " + authid;
+
+            ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+
+            ResultSet rs = con.stmt.executeQuery(sql);
+            while(rs.next()) {
+                final String title = rs.getString("B.title"), isbn = rs.getString("B.isbn"),
+                        authname = rs.getString("A.authname");
+
+                menuItems.add(new MenuItem() {
+                    @Override
+                    public ArrayList<String> getDescs() {
+                        ArrayList<String> descs = new ArrayList<String>();
+                        descs.add(title);
+                        descs.add(isbn);
+                        descs.add(authname);
+                        return descs;
+                    }
+
+                    @Override
+                    public void run() {
+                        Book.showDetails(cid, isbn);
+                    }
+                });
+            }
+
+            String[] headers = {"Title", "ISBN", "Author's name"};
+            int[] maxSizes = {30, 30, 30};
+            MenuDisplay.chooseAndRun(menuItems, headers, maxSizes, null, false);
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+            return;
+        }
+    }
+
     public static int choose() {
-        int i = 0;
+        ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() {
+                ArrayList<String> descs = new ArrayList<String>();
+                descs.add("Search an existing author");
+                return descs;
+            }
 
-        System.out.format("%3d : ", i++);
-        System.out.println("Search an existing author");
-        System.out.format("%3d : ", i++);
-        System.out.println("Add a new author");
-        System.out.format("%3d : ", i++);
-        System.out.println("Return");
+            @Override
+            public void run() {
+                return;
+            }
+        });
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() {
+                ArrayList<String> descs = new ArrayList<String>();
+                descs.add("Add a new author");
+                return descs;
+            }
 
-        int c = Utility.getChoice(3);
+            @Override
+            public void run() {
+                return;
+            }
+        });
+
+        int[] maxSizes = {30};
+        int c = MenuDisplay.getChoice(menuItems, null, maxSizes, null, true);
 
         if (c == 0)
             return search();
         else if (c == 1)
             return add();
 
-        return -2;
+        return -1;
     }
 
     public static void writtenBy(String isbn) {
@@ -33,7 +145,7 @@ public class Author {
         while(true) {
             int authid = choose();
 
-            if(i > 0 && authid == -2) return;
+            if(i > 0 && authid == -1) return;
 
             String sql = "INSERT INTO WrittenBy (isbn, authid) VALUES (";
             sql += "'" + isbn + "'," + authid + ")";
@@ -47,12 +159,12 @@ public class Author {
                     return ;
                 }
                 con.stmt.executeUpdate(sql);
+
+                i++;
             } catch(Exception e) {
                 System.out.println("Cannot add to relation WrittenBy");
                 System.err.println(e.getMessage());
             }
-
-            i++;
         }
     }
 
@@ -61,23 +173,23 @@ public class Author {
         String name = null;
 
         try {
-            do {
-                System.out.print("Please enter author's name : ");
-            }
-            while ((name = in.readLine()) == null || name.length() == 0);
+            System.out.print("Please enter author's name or author's id : ");
+            name = in.readLine();
         } catch(Exception e) {
-            System.out.println("Failed to read author's name");
+            System.out.println("Failed to read author's name or author's id");
             System.err.println(e.getMessage());
             return -1;
         }
 
         String sql = "SELECT A.authname, A.authid, A.intro FROM Author A " +
-                "WHERE A.authname LIKE";
+                "WHERE A.authname LIKE ";
         sql += "'%" + name + "%'";
+        sql += " OR A.authid LIKE '%" + name + "%' ";
         sql += " GROUP BY A.authid";
-        System.err.println(sql);
+        //System.err.println(sql);
 
-        ArrayList<Integer> authids = new ArrayList<Integer>();
+        final ArrayList<Integer> authids = new ArrayList<Integer>();
+        ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
 
         int i = 0;
         try {
@@ -90,40 +202,71 @@ public class Author {
             ResultSet rs = con.stmt.executeQuery(sql);
 
             while(rs.next()) {
-                System.out.format("%3d : ", i++);
-                System.out.format("%s %s\n", rs.getString("A.authname"), Utility.getShortString(rs.getString("A.intro"), 50));
+                final String authname = rs.getString("A.authname"), intro = rs.getString("A.intro");
+                final String authid = rs.getString("A.authid");
+
+                menuItems.add(new MenuItem() {
+                    @Override
+                    public ArrayList<String> getDescs() {
+                        ArrayList<String> descs = new ArrayList<String>();
+                        descs.add(authname);
+                        descs.add(authid);
+                        descs.add(intro == null ? "" : intro.replace("\n", " "));
+                        return descs;
+                    }
+
+                    @Override
+                    public void run() {
+
+                    }
+                });
+
+//                System.out.format("%3d : ", i++);
+//                System.out.format("%s %s\n", rs.getString("A.authname"), Utility.getShortString(rs.getString("A.intro"), 50));
                 authids.add(rs.getInt("A.authid"));
             }
+
         } catch (Exception e) {
             System.out.println("Failed to search author");
             System.err.println(e.getMessage());
         }
 
-        System.out.format("%3d : Return\n", i++);
-        authids.add(new Integer(-1));
-        int c = Utility.getChoice(authids.size() + 1);
+        String[] headers = {"Author's name", "Author's id", "Introduction"};
+        int[] maxSizes = {30, 15, 80};
 
-        return authids.get(c); // should I handle exception here?
+        int choice = MenuDisplay.getChoice(menuItems, headers, maxSizes, null, true);
+        if(choice == -1) return -1;
+
+        return authids.get(choice).intValue();
+    }
+
+    public static ArrayList<String> addDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Add a new author");
+        return descs;
     }
 
     public static int add() {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        String name = null;
+        String name = null, intro;
 
         try {
             do {
                 System.out.print("Please enter author's name : ");
             }
             while ((name = in.readLine()) == null || name.length() == 0);
+
+            System.out.print("Please enter introduction : ");
+            intro = in.readLine();
         } catch(Exception e) {
             System.out.println("Failed to read author's name");
             System.err.println(e.getMessage());
             return -1;
         }
 
-        String sql = "INSERT INTO Author (authname) VALUES";
-        sql += "('" + name + "')";
-        System.err.println(sql);
+        String sql = "INSERT INTO Author (authname, intro) VALUES";
+        sql += "('" + name + "','" + intro +  "')";
+        //System.err.println(sql);
 
         try {
             Connector con = Bookstore.con;
@@ -134,7 +277,6 @@ public class Author {
             }
             con.stmt.execute(sql);
 
-            //sql = "SELECT * FROM Author WHERE authname = '" + name + "'" + " ORDER BY authid DESC";
             sql = "SELECT LAST_INSERT_ID()";
             ResultSet rs = con.stmt.executeQuery(sql);
             rs.next();
@@ -146,8 +288,10 @@ public class Author {
         }
     }
 
-    public static void showDegreesOfSeperationDesc() {
-        System.out.println("Determine the degree of separation of two given authors");
+    public static ArrayList<String> showDegreesOfSeperationDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Determine the degree of separation of two given authors");
+        return descs;
     }
 
     public static void showDegreesOfSeperation() {
@@ -155,10 +299,12 @@ public class Author {
         int authid1, authid2;
 
         try {
-            System.out.println("Please enter the first author id : ");
-            authid1 = Integer.parseInt(in.readLine());
-            System.out.println("Please enter the second author id :");
-            authid2 = Integer.parseInt(in.readLine());
+            System.out.print("The first author, ");
+//            authid1 = Integer.parseInt(in.readLine());
+            authid1 = search();
+            System.out.print("The second author, ");
+//            authid2 = Integer.parseInt(in.readLine());
+            authid2 = search();
         } catch(Exception e) {
             System.out.println("Failed to read");
             System.err.println(e.getMessage());
@@ -211,8 +357,10 @@ public class Author {
         System.out.format("The degree between %d and %d is too far to be determined. > <\n", authid1, authid2);
     }
 
-    public static void showPopularAuthorsDesc() {
-        System.out.println("Show most popular authors in a certain period");
+    public static ArrayList<String> showPopularAuthorsDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Show most popular authors in a certain period");
+        return descs;
     }
 
     public static void showPopularAuthors() {
@@ -235,6 +383,7 @@ public class Author {
             return;
         }
 
+        ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
         try {
             String sql = "SELECT W.authid, SUM(I.amount) as sales FROM ItemInOrder I, WrittenBy W, Orders O " +
                     "WHERE I.isbn = W.isbn AND O.orderid = I.orderid AND O.time >= '" + st + "' AND O.time <= '" + ed +
@@ -249,12 +398,32 @@ public class Author {
             ResultSet rs = con.stmt.executeQuery(sql);
 
             while(rs.next() && m-- > 0) {
-                System.out.format("Author id: %d  Sales: %s\n", rs.getInt("W.authid"), rs.getInt("sales"));
+                final String authid = rs.getString("W.authid"), sales = rs.getString("sales");
+
+                menuItems.add(new MenuItem() {
+                    @Override
+                    public ArrayList<String> getDescs() {
+                        ArrayList<String> descs = new ArrayList<String>();
+                        descs.add(authid);
+                        descs.add(sales);
+                        return descs;
+                    }
+
+                    @Override
+                    public void run() {
+                        Author.showDetails(-1, Integer.parseInt(authid));
+                    }
+                });
             }
         } catch (Exception e) {
             System.out.println("Failed to query");
             System.err.println(e.getMessage());
             return;
         }
+
+        String[] headers = {"Author's id", "Sales"};
+        int[] maxSizes = {30, 30};
+
+        MenuDisplay.chooseAndRun(menuItems, headers, maxSizes, null, true);
     }
 }

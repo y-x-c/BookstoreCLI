@@ -5,142 +5,88 @@
 package YuxinBookstore;
 
 import java.io.*;
+import java.text.Normalizer;
 import java.util.ArrayList;
 
 interface MenuItem {
-    public void showDesc();
+    public ArrayList<String> getDescs();
+    //public void showDesc();
     public void run();
 }
 
 public class MenuDisplay {
-    public static void showMenu(MenuItem[] menuItems) {
-        int i = 0;
-        for(MenuItem item : menuItems) {
-            System.out.format("%3d : ", i++);
-            item.showDesc();
+
+    public static void show(ArrayList<MenuItem> menuItems, String[] headers,
+                            int[] maxSizes, String[] manners, boolean flush) {
+        if(flush) {
+            System.out.print("\u001b[2J");
+            System.out.flush();
+        } else {
+            System.out.println();
         }
-    }
 
-    public static void showMenu(ArrayList<MenuItem> menuItems) {
-        int i = 0;
-        for(MenuItem item : menuItems) {
-            System.out.format("%3d : ", i++);
-            item.showDesc();
-        }
-    }
+        int width = 0;
+        for(int i = 0; i < maxSizes.length; i++) width += maxSizes[i];
+        width += maxSizes.length * 3 + 5;
 
-    public static void choose(MenuItem[] menuItems, boolean flush) {
-        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        String choice;
-        int c = -1;
+        System.out.print("  ");
+        for(int i = 0; i < width; i++) System.out.print("-");
+        System.out.println();
 
-        try {
-            while (true) {
-                if(flush) {
-                    System.out.print("\u001b[2J");
-                    System.out.flush();
-                }
-                int i = 0;
-                for(MenuItem item : menuItems) {
-                    System.out.format("%3d : ", i++);
-                    item.showDesc();
-                }
+        if(headers != null) {
+            System.out.print(" | ");
+            System.out.print(Formatter.format("", 3, "c"));
+            System.out.print(" | ");
 
-                c = Utility.getChoice(menuItems.length - 1);
-//                do { System.out.print("Please enter your choice : "); }
-//                while ((choice = in.readLine()) == null || choice.length() == 0) ;
-//
-//                try {
-//                    c = Integer.parseInt(choice);
-//                    if (c < 0 || c >= menuItems.length) throw new Exception();
-//                } catch (Exception e) {
-//                    System.out.println("Your choice is invalid, please try again.");
-//                    continue;
-//                }
-
-                if(c == menuItems.length - 1) return;
-                menuItems[c].run();
+            int j = 0;
+            for (; j < headers.length; j++) {
+                if(manners == null)
+                    System.out.print(Formatter.format(headers[j], maxSizes[j], "c"));
+                else
+                    System.out.print(Formatter.format(headers[j], maxSizes[j], manners[j]));
+                System.out.print(" | ");
             }
-        } catch(Exception e) {
-            e.printStackTrace();
+            System.out.println();
+
+            System.out.print(" |");
+            for(int i = 0; i < width; i++) System.out.print("=");
+            System.out.println("|");
         }
+
+        int id = 0;
+        for(MenuItem item : menuItems) {
+            System.out.print(" | ");
+            System.out.print(Formatter.format("" + id++, 3, "c"));
+            System.out.print(" | ");
+
+            int i = 0;
+            ArrayList<String> descs = item.getDescs();
+            for(; i < descs.size(); i++) {
+                if(manners == null)
+                    System.out.print(Formatter.format(descs.get(i), maxSizes[i], "c"));
+                else
+                    System.out.print(Formatter.format(descs.get(i), maxSizes[i], manners[i]));
+                System.out.print(" | ");
+            }
+            System.out.println();
+        }
+
+        System.out.print("  ");
+        for(int i = 0; i < width; i++) System.out.print("-");
+        System.out.println();
     }
 
-    public static void choose(ArrayList<MenuItem> menuItems, boolean flush) {
+    public static int getChoice(ArrayList<MenuItem> menuItems, String[] headers,
+                                int[] maxSizes, String[] manners, boolean flush) {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         String choice;
-        int c = -1;
+        int c;
 
         try {
             while (true) {
-                if(flush) {
-                    System.out.print("\u001b[2J");
-                    System.out.flush();
-                }
-                int i = 0;
-                for(MenuItem item : menuItems) {
-                    System.out.format("%3d : ", i++);
-                    item.showDesc();
-                }
+                show(menuItems, headers, maxSizes, manners, flush);
 
                 c = Utility.getChoice(menuItems.size() - 1);
-
-//                do { System.out.print("Please enter your choice : "); }
-//                while ((choice = in.readLine()) == null || choice.length() == 0) ;
-//
-//                try {
-//                    c = Integer.parseInt(choice);
-//                    if (c < 0 || c >= menuItems.size()) throw new Exception();
-//                } catch (Exception e) {
-//                    System.out.println("Your choice is invalid, please try again.");
-//                    continue;
-//                }
-
-                if(c == menuItems.size() - 1) return;
-                menuItems.get(c).run();
-            }
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void choose(ArrayList<MenuItem> menuItems) {
-        choose(menuItems, true);
-    }
-
-    public static void choose(MenuItem[] menuItems) {
-        choose(menuItems, true);
-    }
-
-    public static int getChoice(ArrayList<MenuItem> menuItems, boolean flush) {
-        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        String choice;
-        int c = -1;
-
-        try {
-            while (true) {
-                if(flush) {
-                    System.out.print("\u001b[2J");
-                    System.out.flush();
-                }
-                int i = 0;
-                for(MenuItem item : menuItems) {
-                    System.out.format("%3d : ", i++);
-                    item.showDesc();
-                }
-
-                c = Utility.getChoice(menuItems.size() - 1);
-
-//                do { System.out.print("Please enter your choice : "); }
-//                while ((choice = in.readLine()) == null || choice.length() == 0) ;
-//
-//                try {
-//                    c = Integer.parseInt(choice);
-//                    if (c < 0 || c >= menuItems.size()) throw new Exception();
-//                } catch (Exception e) {
-//                    System.out.println("Your choice is invalid, please try again.");
-//                    continue;
-//                }
 
                 return c;
             }
@@ -151,7 +97,14 @@ public class MenuDisplay {
         return -1;
     }
 
-    public static int getChoice(ArrayList<MenuItem> menuItems) {
-        return getChoice(menuItems, true);
+    public static void chooseAndRun(ArrayList<MenuItem> menuItems, String[] headers,
+                                    int[] maxSizes, String[] manners, boolean flush) {
+        int c;
+        do {
+            c = getChoice(menuItems, headers, maxSizes, manners, flush);
+            flush = false;
+            if(c == -1) return;
+            menuItems.get(c).run();
+        } while (true);
     }
 }

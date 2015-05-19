@@ -3,6 +3,7 @@ package YuxinBookstore;
 import org.omg.IOP.TAG_MULTIPLE_COMPONENTS;
 
 import javax.rmi.CORBA.Util;
+import java.lang.reflect.Array;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.io.*;
@@ -17,9 +18,10 @@ public class Address {
         ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
 
         menuItems.add(new MenuItem() {
-            @Override
-            public void showDesc() {
-                System.out.println("Select an existing address");
+            public ArrayList<String> getDescs() {
+                ArrayList<String> descs = new ArrayList<String>();
+                descs.add("Select an existing address");
+                return descs;
             }
 
             @Override
@@ -30,8 +32,10 @@ public class Address {
 
         menuItems.add(new MenuItem() {
             @Override
-            public void showDesc() {
-                System.out.println("Add a new address");
+            public ArrayList<String> getDescs() {
+                ArrayList<String> descs = new ArrayList<String>();
+                descs.add("Add a new address");
+                return descs;
             }
 
             @Override
@@ -40,27 +44,19 @@ public class Address {
             }
         });
 
-        menuItems.add(new MenuItem() {
-            @Override
-            public void showDesc() {
-                System.out.println("Return");
-            }
-
-            @Override
-            public void run() {
-                return;
-            }
-        });
-
+        int[] maxSizes = {30};
+        String[] manner = {"c"};
         int addrid = -1;
 
         while (addrid == -1) {
-            int c = MenuDisplay.getChoice(menuItems);
+            int c = MenuDisplay.getChoice(menuItems, null, maxSizes, manner, true);
 
             if (c == 0)
                 addrid = search(cid);
             else if (c == 1)
                 addrid = add(cid);
+            else if (c == -1)
+                return -1;
         }
 
         return addrid;
@@ -84,12 +80,26 @@ public class Address {
 
             while(rs.next()) {
                 addrids.add(rs.getInt("addrid"));
-                final String desc = Utility.getFullAddress(rs);
+                final String rname = rs.getString("rname"), rphone = rs.getString("rphone"),
+                        country = rs.getString("country"), state = rs.getString("state"),
+                        city = rs.getString("city"), district = rs.getString("district"),
+                        street = rs.getString("street"), room = rs.getString("room");
+                final int zip = rs.getInt("zip");
 
                 menuItems.add(new MenuItem() {
                     @Override
-                    public void showDesc() {
-                        System.out.println(desc);
+                    public ArrayList<String> getDescs() {
+                        ArrayList<String> descs = new ArrayList<String>();
+                        descs.add(rname);
+                        descs.add(rphone);
+                        descs.add(country);
+                        descs.add(state);
+                        descs.add(city);
+                        descs.add(district);
+                        descs.add(street);
+                        descs.add(room);
+                        descs.add("" + zip);
+                        return descs;
                     }
 
                     @Override
@@ -99,20 +109,12 @@ public class Address {
                 });
             }
 
-            menuItems.add(new MenuItem() {
-                @Override
-                public void showDesc() {
-                    System.out.println("Return");
-                }
+            String[] headers = {"Receiver's name", "Receiver's phone", "country", "state", "city", "district",
+                                "street", "room", "zip"};
+            int[] maxSizes = {30, 30, 10, 10, 10, 10, 10, 10, 10};
 
-                @Override
-                public void run() {
-                    return;
-                }
-            });
-
-            int choice = MenuDisplay.getChoice(menuItems);
-            if(choice == menuItems.size() - 1) {
+            int choice = MenuDisplay.getChoice(menuItems, headers, maxSizes, null, true);
+            if(choice == - 1) {
                 return -1;
             }
 

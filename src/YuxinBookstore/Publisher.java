@@ -18,8 +18,10 @@ public class Publisher {
 
         menuItems.add(new MenuItem() {
             @Override
-            public void showDesc() {
-                System.out.println("Select an existing publisher");
+            public ArrayList<String> getDescs() {
+                ArrayList<String> descs = new ArrayList<String>();
+                descs.add("Select an existing publisher");
+                return descs;
             }
 
             @Override
@@ -30,20 +32,10 @@ public class Publisher {
 
         menuItems.add(new MenuItem() {
             @Override
-            public void showDesc() {
-                System.out.println("Add a new publisher");
-            }
-
-            @Override
-            public void run() {
-                return;
-            }
-        });
-
-        menuItems.add(new MenuItem() {
-            @Override
-            public void showDesc() {
-                System.out.println("Return");
+            public ArrayList<String> getDescs() {
+                ArrayList<String> descs = new ArrayList<String>();
+                descs.add("Add a new publisher");
+                return descs;
             }
 
             @Override
@@ -54,8 +46,10 @@ public class Publisher {
 
         int pid = -1;
 
+        int[] maxSizes = {30};
+
         while (pid == -1) {
-            int c = MenuDisplay.getChoice(menuItems);
+            int c = MenuDisplay.getChoice(menuItems, null, maxSizes, null, true);
 
             if (c == 0)
                 pid = search();
@@ -83,6 +77,7 @@ public class Publisher {
 
         String sql = "SELECT P.pubname, B.title, P.pid FROM Publisher P NATURAL JOIN Book B WHERE P.pubname LIKE";
         sql += "'%" + name + "%'";
+        sql += " OR P.pid LIKE '%" + name + "%' ";
         sql += " GROUP BY P.pid";
         System.err.println(sql);
 
@@ -97,11 +92,16 @@ public class Publisher {
             ResultSet rs = con.stmt.executeQuery(sql);
 
             while(rs.next()) {
-                final String desc = rs.getString("P.pubname") + rs.getString("B.title");
+                final String pubname = rs.getString("P.pubname");
+                final String title = rs.getString("B.title");
+
                 menuItems.add(new MenuItem() {
                     @Override
-                    public void showDesc() {
-                        System.out.println(desc);
+                    public ArrayList<String> getDescs() {
+                        ArrayList<String> descs = new ArrayList<String>();
+                        descs.add(pubname);
+                        descs.add(title);
+                        return descs;
                     }
 
                     @Override
@@ -113,28 +113,23 @@ public class Publisher {
                 pids.add(new Integer(rs.getInt("P.pid")));
             }
 
-            menuItems.add(new MenuItem() {
-                @Override
-                public void showDesc() {
-                    System.out.println("Return");
-                }
-
-                @Override
-                public void run() {
-                    return;
-                }
-            });
-
         } catch (Exception e) {
             System.out.println("Failed to search author");
             System.err.println(e.getMessage());
         }
 
-
-        int choice = MenuDisplay.getChoice(menuItems);
-        if(choice == menuItems.size() - 1) return -1;
+        String[] headers = {"publisher's name", "one published book"};
+        int[] maxSizes = {30, 30};
+        int choice = MenuDisplay.getChoice(menuItems, headers, maxSizes, null, true);
+        if(choice == - 1) return -1;
 
         return pids.get(choice).intValue();
+    }
+
+    public static ArrayList<String> addDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Add a new publisher");
+        return descs;
     }
 
     public static int add() {
@@ -172,8 +167,10 @@ public class Publisher {
         return -1;
     }
 
-    public static void showPopularPublishersDesc() {
-        System.out.println("Show most popular publishers in a certain period");
+    public static ArrayList<String> showPopularPublishersDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Show most popular publishers in a certain period");
+        return descs;
     }
 
     public static void showPopularPublishers() {
@@ -196,6 +193,8 @@ public class Publisher {
             return;
         }
 
+        ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+
         try {
             String sql = "SELECT B.pid, SUM(I.amount) as sales FROM ItemInOrder I, Book B, Orders O " +
                     "WHERE I.isbn = B.isbn AND O.orderid = I.orderid AND O.time >= '" + st + "' AND O.time <= '" + ed +
@@ -206,12 +205,31 @@ public class Publisher {
             ResultSet rs = con.stmt.executeQuery(sql);
 
             while(rs.next() && m-- > 0) {
-                System.out.format("Publisher id: %d  Sales: %s\n", rs.getInt("B.pid"), rs.getInt("sales"));
+                final String pid = rs.getString("B.pid"), sales = rs.getString("sales");
+
+                menuItems.add(new MenuItem() {
+                    @Override
+                    public ArrayList<String> getDescs() {
+                        ArrayList<String> descs = new ArrayList<String>();
+                        descs.add(pid);
+                        descs.add(sales);
+                        return descs;
+                    }
+
+                    @Override
+                    public void run() {
+
+                    }
+                });
             }
         } catch (Exception e) {
             System.out.println("Failed to query");
             System.err.println(e.getMessage());
             return;
         }
+
+        String[] headers = {"Publisher's id", "Sales"};
+        int[] maxSizes = {30, 30};
+        MenuDisplay.chooseAndRun(menuItems, headers, maxSizes, null, true);
     }
 }

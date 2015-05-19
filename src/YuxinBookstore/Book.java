@@ -4,7 +4,9 @@ package YuxinBookstore;
  * Created by Orthocenter on 5/12/15.
  */
 
+import java.awt.*;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.sql.ResultSet;
 import java.sql.Time;
 import java.util.ArrayList;
@@ -14,7 +16,7 @@ import java.util.Timer;
 
 public class Book {
 
-    public static ResultSet search(String conditions) {
+    public static ResultSet search(int cid, String conditions) {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         Connector con = Bookstore.con;
         try {
@@ -26,8 +28,8 @@ public class Book {
         int orderBy = 0;
         try {
             System.out.println("Sort by year(ASC 0, DESC 1), \n" +
-                    "or by the average numerical score of the feedbacks(ASC 2, DESC 3), \n" +
-                    "or by the average numerical score of the trusted user feedbacks(ASC 4, DESC 5) :");
+                    "   or by the average numerical score of the feedbacks(ASC 2, DESC 3), \n" +
+                    "   or by the average numerical score of the trusted user feedbacks(ASC 4, DESC 5) :");
             orderBy = Integer.parseInt(in.readLine());
         } catch(Exception e) {
             System.out.println("Failed to get ordering manner");
@@ -48,14 +50,14 @@ public class Book {
             sql += " ORDER BY (SELECT AVG(score) FROM Feedback F WHERE F.isbn = B.isbn)DESC";
         } else if(orderBy == 4) {
             sql += " ORDER BY (SELECT AVG(score) FROM Feedback F WHERE F.isbn = B.isbn AND " +
-                    "F.cid NOT IN ( " +
-                    "SELECT T.cid2 FROM TrustRecords T WHERE T.trust = FALSE))ASC";
+                    "(F.cid = " + cid + " OR F.cid IN ( " +
+                    "SELECT T.cid2 FROM TrustRecords T WHERE T.trust = TRUE AND T.cid1 = " + cid + ")))ASC";
         } else if(orderBy == 5) {
-            sql += " ORDER BY (SELECT AVG(score) FROM Feedback F WHERE F.isbn = B.isbn and " +
-                    "F.cid NOT IN ( " +
-                    "SELECT T.cid2 FROM TrustRecords T WHERE T.trust = FALSE))DESC";
+            sql += " ORDER BY (SELECT AVG(score) FROM Feedback F WHERE F.isbn = B.isbn AND " +
+                    "(F.cid = " + cid + " OR F.cid IN ( " +
+                    "SELECT T.cid2 FROM TrustRecords T WHERE T.trust = TRUE AND T.cid1 = " + cid + ")))DESC";
         }
-        System.out.println(sql);
+        //System.out.println(sql);
 
         try {
             ResultSet rs = con.stmt.executeQuery(sql);
@@ -67,8 +69,47 @@ public class Book {
         }
     }
 
-    public static void simpleSearchMenuDesc() {
-        System.out.println("Simple book search");
+    public static void showSearchResults(final int cid, ResultSet rs) {
+        try {
+            ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+
+            while (rs.next()) {
+                final String row = rs.getString("title") + " " + rs.getString("price") + " "
+                        + rs.getString("A.authname") + " " + rs.getString("isbn");
+                final String isbn = rs.getString("isbn"), title = rs.getString("title"),
+                        price = rs.getString("price"), authname = rs.getString("authname");
+
+                menuItems.add(new MenuItem() {
+                    public ArrayList<String> getDescs() {
+                        ArrayList<String> descs = new ArrayList<String>();
+                        descs.add(title);
+                        descs.add(price);
+                        descs.add(authname);
+                        descs.add(isbn);
+                        return descs;
+                    }
+
+                    public void run() {
+                        showDetails(cid, isbn);
+                    }
+                });
+            }
+
+            String[] headers = {"title", "price", "one of authors", "ISBN"};
+            int[] maxSizes = {30, 15, 30, 30};
+
+            MenuDisplay.chooseAndRun(menuItems, headers, maxSizes, null, true);
+        } catch (Exception e) {
+            System.out.println("Failed to print results");
+            System.err.println(e.getMessage());
+            return;
+        }
+    }
+
+    public static ArrayList<String> simpleSearchMenuDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Simple book search");
+        return descs;
     }
 
     public static void simpleSearchMenu(final int cid) {
@@ -88,38 +129,9 @@ public class Book {
                         "%' OR keyword LIKE '%" + keyWord + "%' OR subject LIKE '%" + keyWord + "%'" +  ") ";
             }
 
-            ResultSet rs = search(conditions);
+            ResultSet rs = search(cid, conditions);
 
-            ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
-
-            while (rs.next()) {
-                final String row = rs.getString("title") + " " + rs.getString("price") + " "
-                        + rs.getString("A.authname") + " " + rs.getString("isbn");
-                final String isbn = rs.getString("isbn");
-
-                menuItems.add(new MenuItem() {
-                    public void showDesc() {
-                        showDetailsDesc(row);
-                    }
-
-                    public void run() {
-                        showDetails(cid, isbn);
-                    }
-                });
-            }
-
-            menuItems.add(new MenuItem() {
-                public void showDesc() {
-                    System.out.println("Return");
-                }
-
-                public void run() {
-                    return;
-                }
-            });
-
-            MenuDisplay menuDisplay = new MenuDisplay();
-            menuDisplay.choose(menuItems);
+            showSearchResults(cid, rs);
 
             // TBD: turn the page
 
@@ -129,8 +141,10 @@ public class Book {
         }
     }
 
-    public static void advancedSearchDesc() {
-        System.out.println("Advanced Search");
+    public static ArrayList<String> advancedSearchDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Advanced Search");
+        return descs;
     }
 
     public static void advancedSearch(final int cid) {
@@ -184,38 +198,9 @@ public class Book {
 
 
         try {
-            ResultSet rs = search(conditions);
+            ResultSet rs = search(cid, conditions);
 
-            ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
-
-            while (rs.next()) {
-                final String row = rs.getString("title") + " " + rs.getString("price") + " "
-                        + rs.getString("A.authname") + " " + rs.getString("isbn");
-                final String isbn = rs.getString("isbn");
-
-                menuItems.add(new MenuItem() {
-                    public void showDesc() {
-                        showDetailsDesc(row);
-                    }
-
-                    public void run() {
-                        showDetails(cid, isbn);
-                    }
-                });
-            }
-
-            menuItems.add(new MenuItem() {
-                public void showDesc() {
-                    System.out.println("Return");
-                }
-
-                public void run() {
-                    return;
-                }
-            });
-
-            MenuDisplay menuDisplay = new MenuDisplay();
-            menuDisplay.choose(menuItems);
+            showSearchResults(cid, rs);
         } catch (Exception e) {
             System.out.println("Failed to print search result");
             System.err.println(e.getMessage());
@@ -223,9 +208,9 @@ public class Book {
         }
     }
 
-    public static void showDetailsDesc(final String row) {
-        System.out.println(row);
-    }
+//    public static ArrayList<String> showDetailsDesc(final String row) {
+//        System.out.println(row);
+//    }
 
     public static void showDetails(final int cid, final String isbn) {
         Connector con = Bookstore.con;
@@ -247,17 +232,124 @@ public class Book {
             return ;
         }
 
+        ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+
         try {
             rs.next();
-            System.out.format("|-Title : %s\n", rs.getString("title"));
-            System.out.format("|-ISBN : %s\n", rs.getString("isbn"));
-            //System.out.format("|-Author : %s\n", rs.getString("A.name"));
-            //System.out.format("Translator : %s\n", rs.getString("translator"));
-            System.out.format("|-Publisher : %s\n", rs.getString("P.pubname"));
-            System.out.format("|-Pubdate : %s\n", rs.getString("pubdate"));
-            System.out.format("|-Format : %s\n", rs.getString("format"));
-            System.out.format("|-Price : %f\n", rs.getFloat("price"));
-            System.out.format("|-Copies : %d\n", rs.getInt("copies"));
+
+            final String title = rs.getString("title"),
+                    publisher = rs.getString("P.pubname"), pubdate = rs.getString("pubdate"),
+                    format = rs.getString("format"), price = rs.getString("price"),
+                    copies = rs.getString("copies"), summary = rs.getString("summary");
+
+            menuItems.add(new MenuItem() {
+                @Override
+                public ArrayList<String> getDescs() {
+                    ArrayList<String> descs = new ArrayList<String>();
+                    descs.add("Title");
+                    descs.add(title);
+                    return descs;
+                }
+
+                @Override
+                public void run() {
+
+                }
+            });
+
+            menuItems.add(new MenuItem() {
+                @Override
+                public ArrayList<String> getDescs() {
+                    ArrayList<String> descs = new ArrayList<String>();
+                    descs.add("Publisher");
+                    descs.add(publisher);
+                    return descs;
+                }
+
+                @Override
+                public void run() {
+
+                }
+            });
+
+            menuItems.add(new MenuItem() {
+                @Override
+                public ArrayList<String> getDescs() {
+                    ArrayList<String> descs = new ArrayList<String>();
+                    descs.add("Publish date");
+                    descs.add(pubdate);
+                    return descs;
+                }
+
+                @Override
+                public void run() {
+
+                }
+            });
+
+            menuItems.add(new MenuItem() {
+                @Override
+                public ArrayList<String> getDescs() {
+                    ArrayList<String> descs = new ArrayList<String>();
+                    descs.add("Format");
+                    descs.add(format);
+                    return descs;
+                }
+
+                @Override
+                public void run() {
+
+                }
+            });
+
+            menuItems.add(new MenuItem() {
+                @Override
+                public ArrayList<String> getDescs() {
+                    ArrayList<String> descs = new ArrayList<String>();
+                    descs.add("Price");
+                    descs.add(price);
+                    return descs;
+                }
+
+                @Override
+                public void run() {
+
+                }
+            });
+
+            menuItems.add(new MenuItem() {
+                @Override
+                public ArrayList<String> getDescs() {
+                    ArrayList<String> descs = new ArrayList<String>();
+                    descs.add("copies");
+                    descs.add(copies);
+                    return descs;
+                }
+
+                @Override
+                public void run() {
+
+                }
+            });
+
+            menuItems.add(new MenuItem() {
+                @Override
+                public ArrayList<String> getDescs() {
+                    ArrayList<String> descs = new ArrayList<String>();
+                    descs.add("summary");
+                    descs.add(summary == null ? "" : summary.replace("\n", " "));
+                    return descs;
+                }
+
+                @Override
+                public void run() {
+
+                }
+            });
+
+            int[] maxSizes = {30, 100};
+            MenuDisplay.show(menuItems, null, maxSizes, null, true);
+
         } catch (Exception e) {
             System.out.println("Failed to print details");
             System.err.println(e.getMessage());
@@ -272,87 +364,95 @@ public class Book {
             System.err.println(e.getMessage());
         }
         try {
+            menuItems = new ArrayList<MenuItem>();
+
             while(rs.next()) {
-                System.out.format("|-Author : %s\n", rs.getString("authname"));
+                final String authname = rs.getString("authname");
+
+                menuItems.add(new MenuItem() {
+                    @Override
+                    public ArrayList<String> getDescs() {
+                        ArrayList<String> descs = new ArrayList<String>();
+                        descs.add(authname);
+                        return descs;
+                    }
+
+                    @Override
+                    public void run() {
+
+                    }
+                });
+
             }
+
+            String[] headers = {"Author"};
+            int[] maxSizes = {30};
+            MenuDisplay.show(menuItems, headers, maxSizes, null, false);
+
         } catch (Exception e) {
             System.out.println("Failed to print author(s)");
             System.err.println(e.getMessage());
         }
 
+        if(cid == -1) return;
+
         try {
-            final Order order = new Order();
+            menuItems = new ArrayList<MenuItem>();
 
-            MenuItem[] menuItems = new MenuItem[] {
-//                new MenuItem() {
-//                    public void showDesc() {
-//                        order.buyNowDesc();
-//                    }
-//                    public void run() {
-//                        order.buyNow(cid, isbn);
-//                    }
-//                },
-                new MenuItem() {
-                    public void showDesc() {
-                        order.add2CartDesc();
-                    }
-                    public void run() {
-                        order.add2Cart(cid, isbn);
-                    }
-                },
-                    new MenuItem() {
-                        @Override
-                        public void showDesc() {
-                            Book.showSuggestionsDesc();
-                        }
-
-                        @Override
-                        public void run() {
-                            Book.showSuggestions(isbn);
-                        }
-                    },
-                    new MenuItem() {
-                        @Override
-                        public void showDesc() {
-                            Feedback.recordDesc();
-                        }
-
-                        @Override
-                        public void run() {
-                            Feedback.record(cid, isbn);
-                        }
-                    },
-                    new MenuItem() {
-                        @Override
-                        public void showDesc() {
-                            Feedback.showFeedbacksDesc();
-                        }
-
-                        @Override
-                        public void run() {
-                            Feedback.showFeedbacks(isbn, 100);
-                        }
-                    },
-                new MenuItem() {
-                    public void showDesc() {
-                        System.out.println("Return");
-                    }
-                    public void run() {
-                        return ;
-                    }
+            menuItems.add(new MenuItem() {
+                public ArrayList<String> getDescs() {
+                    return Order.add2CartDescs();
                 }
-            };
+                public void run() {
+                    Order.add2Cart(cid, isbn);
+                }
+            });
+            menuItems.add(new MenuItem() {
+                @Override
+                public ArrayList<String> getDescs() {
+                    return Book.showSuggestionsDescs();
+                }
 
-            MenuDisplay menuDisplay = new MenuDisplay();
-            menuDisplay.choose(menuItems);
+                @Override
+                public void run() {
+                    Book.showSuggestions(isbn);
+                }
+            });
+            menuItems.add(new MenuItem() {
+                @Override
+                public ArrayList<String> getDescs() {
+                    return Feedback.recordDescs();
+                }
+
+                @Override
+                public void run() {
+                    Feedback.record(cid, isbn);
+                }
+            });
+            menuItems.add(new MenuItem() {
+                @Override
+                public ArrayList<String> getDescs() {
+                    return Feedback.showFeedbacksDescs();
+                }
+
+                @Override
+                public void run() {
+                    Feedback.showFeedbacks(isbn, cid, 100);
+                }
+            });
+
+            int[] maxSizes = {50};
+            MenuDisplay.chooseAndRun(menuItems, null, maxSizes, null, false);
         } catch(Exception e) {
             System.out.println("Failed to show more options");
             System.err.println(e.getMessage());
         }
     }
 
-    public static void addBookDesc() {
-        System.out.println("Add a book");
+    public static ArrayList<String> addBookDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Add a book");
+        return descs;
     }
 
     public static void addBook() {
@@ -424,16 +524,10 @@ public class Book {
         }
     }
 
-    public static void editDetailsDesc() {
-        System.out.println("Edit details for a book");
-    }
-
-    public static void editDetails(int cid, String isbn) {
-
-    }
-
-    public static void replenishDesc() {
-        System.out.println("Arrival of more copies");
+    public static ArrayList<String> replenishDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Arrival of more copies");
+        return descs;
     }
 
     public static void replenish() {
@@ -470,8 +564,10 @@ public class Book {
         }
     }
 
-    public static void showPopularBooksDesc() {
-        System.out.println("Show most popular books in a certain period");
+    public static ArrayList<String> showPopularBooksDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Show most popular books in a certain period");
+        return descs;
     }
 
     public static void showPopularBooks() {
@@ -494,6 +590,8 @@ public class Book {
             return;
         }
 
+        ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+
         try {
             String sql = "SELECT isbn, SUM(amount) as sales FROM ItemInOrder I, Orders O " +
                     "WHERE I.orderid = O.orderid AND O.time >= '" + st + "' AND O.time <= '" + ed +
@@ -504,13 +602,34 @@ public class Book {
             ResultSet rs = con.stmt.executeQuery(sql);
 
             while(rs.next() && m-- > 0) {
-                System.out.format("ISBN: %s  Sales: %s\n", rs.getString("isbn"), rs.getInt("sales"));
+                final String isbn = rs.getString("isbn");
+                final String sales = rs.getString("sales");
+
+                menuItems.add(new MenuItem() {
+                    @Override
+                    public ArrayList<String> getDescs() {
+                        ArrayList<String> descs = new ArrayList<String>();
+                        descs.add(isbn);
+                        descs.add(sales);
+                        return descs;
+                    }
+
+                    @Override
+                    public void run() {
+                        Book.showDetails(-1, isbn);
+                    }
+                });
             }
         } catch (Exception e) {
             System.out.println("Failed to query");
             System.err.println(e.getMessage());
             return;
         }
+
+        String[] headers = {"ISBN", "sales"};
+        int[] maxSizes = {30, 30};
+
+        MenuDisplay.chooseAndRun(menuItems, headers, maxSizes, null, true);
     }
 
     public static ArrayList<String> suggest(final String isbn) {
@@ -520,7 +639,7 @@ public class Book {
                     "I1.isbn='" + isbn + "'" + " AND I2.isbn != '" + isbn + "'" +
                     " GROUP BY I2.isbn";
 
-            System.err.println(sql);
+            //System.err.println(sql);
             Connector con = Bookstore.con;
 
             ResultSet rs = con.stmt.executeQuery(sql);
@@ -539,8 +658,10 @@ public class Book {
         }
     }
 
-    public static void showSuggestionsDesc() {
-        System.out.println("Give you some suggested books");
+    public static ArrayList<String> showSuggestionsDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Give you some suggested books");
+        return descs;
     }
 
     public static void showSuggestions(final String isbn) {
@@ -549,13 +670,37 @@ public class Book {
         try {
             Connector con = Bookstore.con;
 
+            ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+
             for (String suggestion : suggestions) {
                 String sql = "SELECT * FROM Book WHERE isbn = '" + suggestion + "'";
                 System.err.println(sql);
                 ResultSet rs = con.stmt.executeQuery(sql);
                 rs.next();
-                System.out.format("Title: %s  ISBN: %s: \n", rs.getString("title"), rs.getString("isbn")); //TBD
+
+                final String title = rs.getString("title");
+                final String isbn2 = rs.getString("isbn");
+
+                menuItems.add(new MenuItem() {
+                    @Override
+                    public ArrayList<String> getDescs() {
+                        ArrayList<String> descs = new ArrayList<String>();
+                        descs.add(title);
+                        descs.add(isbn2);
+                        return descs;
+                    }
+
+                    @Override
+                    public void run() {
+                        Book.showDetails(-1, isbn2);
+                    }
+                });
             }
+
+            String[] headers = {"Title", "ISBN"};
+            int[] maxSizes = {30, 30};
+            MenuDisplay.chooseAndRun(menuItems, headers, maxSizes, null, true);
+
         } catch(Exception e) {
             System.out.print("Failed to print suggestions");
             System.err.println(e.getMessage());

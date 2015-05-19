@@ -3,6 +3,7 @@ package YuxinBookstore;
 import javax.xml.transform.Result;
 import java.awt.*;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 
@@ -14,16 +15,10 @@ import java.util.ArrayList;
 
 public class Order {
 
-    public static void buyNowDesc() {
-        System.out.println("Buy it now!");
-    }
-
-    public static void buyNow(final int cid, final String isbn) {
-
-    }
-
-    public static void add2CartDesc() {
-        System.out.println("Add it into the cart");
+    public static ArrayList<String> add2CartDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Add it into the cart");
+        return descs;
     }
 
     public static void add2Cart(final int cid, final String isbn) {
@@ -62,41 +57,39 @@ public class Order {
         try {
             System.out.println("Added to the shopping cart successfully");
 
-            MenuItem[] menuItems = new MenuItem[] {
-                new MenuItem() {
-                    public void showDesc() {
-                        showCartDesc();
-                    }
-                    public void run() {
-                        showCart(cid);
-                    }
-                },
-                    new MenuItem() {
-                        public void showDesc() {
-                            System.out.println("Return");
-                        }
-                        public void run() {
-                            return ;
-                        }
-                    }
-            };
+            ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
 
+            menuItems.add(new MenuItem() {
+                              public ArrayList<String> getDescs() {
+                                  return showCartDescs();
+                              }
+                              public void run() {
+                                  showCart(cid);
+                              }
+                          }
+            );
+
+
+            int[] maxSizes = {30};
             MenuDisplay menuDisplay = new MenuDisplay();
-            menuDisplay.choose(menuItems);
+            menuDisplay.chooseAndRun(menuItems, null, maxSizes, null, false);
 
         } catch(Exception e) {
-
+            System.err.println(e.getMessage());
+            return;
         }
     }
 
-    public static void showCartDesc() {
-        System.out.println("Show all items in your cart");
+    public static ArrayList<String> showCartDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Show all items in your cart");
+        return descs;
     }
 
     public static void showCart(final int cid) {
         try {
             String sql = "SELECT * FROM Cart C NATURAL JOIN Book B WHERE C.cid = " + cid;
-            System.err.println(sql);
+            //System.err.println(sql);
             Connector con = Bookstore.con;
             try {
                 con.newStatement();
@@ -105,12 +98,33 @@ public class Order {
             }
             ResultSet rs = con.stmt.executeQuery(sql);
 
+            ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+
             while(rs.next()) {
-                System.out.format("Title: %s  Price: %f  ISBN: %s  Amount: %d\n", rs.getString("B.title"),
-                        rs.getFloat("B.price"), rs.getString("isbn"), rs.getInt("C.amount"));
+                final String title = rs.getString("B.title"), price = rs.getString("B.price"),
+                        amount = rs.getString("C.amount"), isbn = rs.getString("isbn");
+
+                menuItems.add(new MenuItem() {
+                    @Override
+                    public ArrayList<String> getDescs() {
+                        ArrayList<String> descs = new ArrayList<String>();
+                        descs.add(title);
+                        descs.add(price);
+                        descs.add(amount);
+                        descs.add(isbn);
+                        return descs;
+                    }
+
+                    @Override
+                    public void run() {
+
+                    }
+                });
             }
 
-            //TBD
+            String[] headers = {"Title", "Price", "Amount", "ISBN"};
+            int[] maxSizes = {30, 15, 15, 30};
+            MenuDisplay.chooseAndRun(menuItems, headers, maxSizes, null, true);
         } catch (Exception e) {
             System.out.println("Failed to query");
             System.err.println(e.getMessage());
@@ -118,15 +132,7 @@ public class Order {
         }
     }
 
-    public static void editItemDesc(final String isbn, final Integer amount, final float price) {
-        System.out.println();
-    }
-
-    public static void editItem(final int cid, final String isbn, final Integer amount, final float price) {
-
-    }
-
-    public static void showOrderDetailsDesc(final int orderid) {
+    public static ArrayList<String> showOrderDetailsDescs(final int orderid) {
         String sql = "SELECT * FROM Orders WHERE orderid = " + orderid;
 
         try {
@@ -135,12 +141,19 @@ public class Order {
 
             ResultSet rs = con.stmt.executeQuery(sql);
             rs.next();
-            System.out.format("Order id: %d, Time: %s, Customer id: %d\n", rs.getInt("orderid"), rs.getString("time"),
-                    rs.getInt("cid"));
+            final String _orderid = rs.getString("orderid"), time =  rs.getString("time"),
+                    cid = rs.getString("cid");
+
+            ArrayList<String> descs = new ArrayList<String>();
+            descs.add(_orderid);
+            descs.add(time);
+            descs.add(cid);
+            return descs;
+
         } catch(Exception e) {
-            System.out.println("Failed to print order description");
+            System.out.println("Failed to get order description");
             System.err.println(e.getMessage());
-            return;
+            return null;
         }
     }
 
@@ -152,8 +165,8 @@ public class Order {
 
             ResultSet rs = con.stmt.executeQuery(sql);
             rs.next();
-            System.out.format("|--Order id : %d\n", rs.getInt("orderid"));
-            System.out.format("|--Time : %s\n", rs.getString("time"));
+            final String time = rs.getString("time");
+            //orderid
 
             final int cid = rs.getInt("cid");
             final int addrid = rs.getInt("addrid");
@@ -162,38 +175,124 @@ public class Order {
             rs = con.stmt.executeQuery(sql);
             rs.next();
 
-            System.out.format("|--Username : %s\n", rs.getString("username"));
+            final String username = rs.getString("username");
 
             sql = "SELECT * FROM Address A WHERE addrid = " + addrid;
             rs = con.stmt.executeQuery(sql);
             rs.next();
 
-            System.out.format("|--Address : %s\n", Utility.getFullAddress(rs));
-            System.out.format("|--Receiver's Name : %s\n", rs.getString("rname"));
-            System.out.format("|--Receiver's Phone : %s\n", rs.getString("rphone"));
+            final String address = Utility.getFullAddress(rs);
+            final String rname = rs.getString("rname");
+            final String rphone = rs.getString("rphone");
 
             sql = "SELECT * FROM ItemInOrder I, Book B WHERE orderid = " + orderid +
                 " AND I.isbn = B.isbn";
             rs = con.stmt.executeQuery(sql);
 
+            ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+            ArrayList<MenuItem> menuItems2 = new ArrayList<MenuItem>();
+
+            menuItems.add(new MenuItem() {
+                @Override
+                public ArrayList<String> getDescs() {
+                    ArrayList<String> descs = new ArrayList<String>();
+                    descs.add("Orderid");
+                    descs.add("" + orderid);
+                    return descs;
+                }
+
+                @Override
+                public void run() {
+
+                }
+            });
+            menuItems.add(new MenuItem() {
+                @Override
+                public ArrayList<String> getDescs() {
+                    ArrayList<String> descs = new ArrayList<String>();
+                    descs.add("Address");
+                    descs.add(address);
+                    return descs;
+                }
+
+                @Override
+                public void run() {
+
+                }
+            });
+            menuItems.add(new MenuItem() {
+                @Override
+                public ArrayList<String> getDescs() {
+                    ArrayList<String> descs = new ArrayList<String>();
+                    descs.add("Time");
+                    descs.add(time);
+                    return descs;
+                }
+
+                @Override
+                public void run() {
+
+                }
+            });
+            menuItems.add(new MenuItem() {
+                @Override
+                public ArrayList<String> getDescs() {
+                    ArrayList<String> descs = new ArrayList<String>();
+                    descs.add("Username");
+                    descs.add(username);
+                    return descs;
+                }
+
+                @Override
+                public void run() {
+
+                }
+            });
+            menuItems.add(new MenuItem() {
+                @Override
+                public ArrayList<String> getDescs() {
+                    ArrayList<String> descs = new ArrayList<String>();
+                    descs.add("Receiver's name");
+                    descs.add(rname);
+                    return descs;
+                }
+
+                @Override
+                public void run() {
+
+                }
+            });
+            menuItems.add(new MenuItem() {
+                @Override
+                public ArrayList<String> getDescs() {
+                    ArrayList<String> descs = new ArrayList<String>();
+                    descs.add("Receiver's phone");
+                    descs.add(rphone);
+                    return descs;
+                }
+
+                @Override
+                public void run() {
+
+                }
+            });
+
             int i = 0;
             float totalPrices = 0;
-            ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+
             while(rs.next()) {
-                String row = "";
-                row += "Item " + i++ + ", ";
-                row += "Title: " + rs.getString("B.title") + ", ";
-                row += "Price: " + rs.getString("I.price") + ", ";
-                row += "ISBN: " + rs.getString("B.isbn") + ", ";
-                row += "Amount: " + rs.getString("I.amount");
+                final String title = rs.getString("B.title"), price = rs.getString("I.price"),
+                        isbn = rs.getString("B.isbn"), amount = rs.getString("I.amount");
 
-                final String _row = row;
-                final String isbn = rs.getString("B.isbn");
-
-                menuItems.add(new MenuItem() {
+                menuItems2.add(new MenuItem() {
                     @Override
-                    public void showDesc() {
-                        Book.showDetailsDesc(_row);
+                    public ArrayList<String> getDescs() {
+                        ArrayList<String> descs = new ArrayList<String>();
+                        descs.add(title);
+                        descs.add(price);
+                        descs.add(isbn);
+                        descs.add(amount);
+                        return descs;
                     }
 
                     @Override
@@ -205,21 +304,33 @@ public class Order {
                 totalPrices += rs.getFloat("I.price") * rs.getInt("I.amount");
             }
 
+
+            final String _totalPrices = "" + totalPrices;
             menuItems.add(new MenuItem() {
                 @Override
-                public void showDesc() {
-                    System.out.println("Return");
+                public ArrayList<String> getDescs() {
+                    ArrayList<String> descs = new ArrayList<String>();
+                    descs.add("Total price");
+                    descs.add(_totalPrices);
+                    return descs;
                 }
 
                 @Override
                 public void run() {
-                    return;
+
                 }
             });
 
-            System.out.format("|--Total Prices : %f\n", totalPrices);
 
-            MenuDisplay.choose(menuItems, false);
+            System.out.print("\u001b[2J");
+            System.out.flush();
+
+            int[] maxSizes = {20, 80};
+            int[] maxSizes2 = {30, 15, 30, 15};
+
+            MenuDisplay.show(menuItems, null, maxSizes, null, true);
+            MenuDisplay.chooseAndRun(menuItems2, null, maxSizes2, null, false);
+
         } catch(Exception e) {
             System.out.println("Failed to print order details");
             System.err.println(e.getMessage());
@@ -227,8 +338,10 @@ public class Order {
         }
     }
 
-    public static void showAllOrdersDesc() {
-        System.out.println("Show all orders for a certain customer");
+    public static ArrayList<String> showAllOrdersDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Show all orders for a certain customer");
+        return descs;
     }
 
     public static void showAllOrder(int cid) {
@@ -248,8 +361,9 @@ public class Order {
                 final int orderid = rs.getInt("orderid");
                 menuItems.add(new MenuItem() {
                     @Override
-                    public void showDesc() {
-                        showOrderDetailsDesc(orderid);
+                    public ArrayList<String> getDescs() {
+                        //orderid, time, cid
+                        return showOrderDetailsDescs(orderid);
                     }
 
                     @Override
@@ -259,19 +373,9 @@ public class Order {
                 });
             }
 
-            menuItems.add(new MenuItem() {
-                @Override
-                public void showDesc() {
-                    System.out.print("Return");
-                }
-
-                @Override
-                public void run() {
-                    return;
-                }
-            });
-
-            MenuDisplay.choose(menuItems);
+            String[] headers = {"Order id", "Time", "Customer id"};
+            int[] maxSizes = {30, 30, 30};
+            MenuDisplay.chooseAndRun(menuItems, headers, maxSizes, null, true);
         } catch (Exception e) {
             System.out.println("Failed to query");
             System.err.println(e.getMessage());
@@ -279,8 +383,10 @@ public class Order {
         }
     }
 
-    public static void confirmOrderDesc() {
-        System.out.println("Confirm your order");
+    public static ArrayList<String> confirmOrderDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Confirm your order");
+        return descs;
     }
 
     public static void confirmOrder(final int cid) {
@@ -313,6 +419,7 @@ public class Order {
 
         //TBD
         int addrid = Address.choose(cid);
+        if(addrid == -1) return;
 
         // modify amount and record order
         try {

@@ -16,17 +16,17 @@ public class Utility {
         do {
             try {
                 do {
-                    System.out.print("Please enter your choice : ");
+                    System.out.print("Please enter your choice (-1 for return) : ");
                 }
                 while ((choice = in.readLine()) == null || choice.length() == 0);
 
                 c = Integer.parseInt(choice);
-                if (c < 0 || c > bound) throw new Exception();
+                if (c < -1 || c > bound) throw new Exception();
             } catch (Exception e) {
                 System.out.println("Your choice is invalid, please try again.");
-                c = -1;
+                c = -2;
             }
-        } while (c == -1);
+        } while (c == -2);
 
         return c;
     }

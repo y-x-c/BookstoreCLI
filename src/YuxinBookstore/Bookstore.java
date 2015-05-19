@@ -7,46 +7,44 @@
 
 package YuxinBookstore;
 
-public class Bookstore {
+ import java.awt.*;
+ import java.util.ArrayList;
+
+ public class Bookstore {
 
     public static Connector con = null;
 
     public static void displayMenu() {
-        final Customer customer = new Customer();
-        final Admin admin = new Admin();
+        ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+        int[] maxSizes = {30};
+        String[] manners = {"c"};
 
-        MenuItem[] menuItems = new MenuItem[]{
-                new MenuItem() {
-                    public void showDesc() {
-                        customer.mainMenuDesc();
-                    }
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() {
+                return Customer.mainMenuDescs();
+            }
 
-                    public void run() {
-                        customer.mainMenu();
-                    }
-                },
-                new MenuItem() {
-                    public void showDesc() {
-                        admin.mainMenuDesc();
-                    }
+            @Override
+            public void run() {
+                Customer.mainMenu();
+            }
+        });
 
-                    public void run() {
-                        admin.mainMenu();
-                    }
-                },
-                new MenuItem() {
-                    public void showDesc() {
-                        System.out.println("Exit");
-                    }
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() {
+                return Admin.mainMenuDescs();
+            }
 
-                    public void run() {
-                        return;
-                    }
-                }
-        };
+            @Override
+            public void run() {
+                Admin.mainMenu();
+            }
+        });
 
         MenuDisplay menuDisplay = new MenuDisplay();
-        menuDisplay.choose(menuItems);
+        menuDisplay.chooseAndRun(menuItems, null, maxSizes, manners, true);
     }
 
     public static void main(String[] args) {

@@ -4,37 +4,39 @@
 
 package YuxinBookstore;
 
+import java.awt.*;
 import java.io.*;
 import java.sql.*;
+import java.util.ArrayList;
 
 public class Customer {
 
-    public static void mainMenuDesc() {
-        System.out.println("For customer");
+    public static ArrayList<String> mainMenuDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("For customer");
+        return descs;
     }
 
     public static void mainMenu() {
-        MenuItem[] menuItems = new MenuItem[] {
-                new MenuItem() {
-                    public void showDesc() { loginMenuDesc(); }
-                    public void run() { loginMenu(); }
-                },
-                new MenuItem() {
-                    public void showDesc() { signupMenuDesc(); }
-                    public void run() { signupMenu(); }
-                },
-                new MenuItem() {
-                    public void showDesc() { System.out.println("Return"); }
-                    public void run() { return; }
-                }
-        };
+        ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+        menuItems.add(new MenuItem() {
+            public ArrayList<String> getDescs() { return loginMenuDescs(); }
+            public void run() { loginMenu(); }
+        });
+        menuItems.add(new MenuItem() {
+            public ArrayList<String> getDescs() { return signupMenuDescs(); }
+            public void run() { signupMenu(); }
+        });
 
+        int[] maxSize = {30};
         MenuDisplay menuDisplay = new MenuDisplay();
-        menuDisplay.choose(menuItems);
+        menuDisplay.chooseAndRun(menuItems, null, maxSize, null, true);
     }
 
-    public static void loginMenuDesc() {
-        System.out.println("Login");
+    public static ArrayList<String> loginMenuDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Login");
+        return descs;
     }
 
     public static void loginMenu() {
@@ -78,8 +80,10 @@ public class Customer {
         }
     }
 
-    public static void signupMenuDesc() {
-        System.out.println("Sign Up");
+    public static ArrayList<String> signupMenuDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Sign Up");
+        return descs;
     }
 
     public static void signupMenu() {
@@ -144,8 +148,10 @@ public class Customer {
         }
     }
 
-    public static void declareUserDesc() {
-        System.out.println("Declare other users as 'trusted' or 'not-trusted'");
+    public static ArrayList<String> declareUserDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Declare other users as 'trusted' or 'not-trusted'");
+        return descs;
     }
 
     public static void declareUser(int cid) {
@@ -189,116 +195,108 @@ public class Customer {
         }
     }
 
-    public static void userhomeMenuDesc() {
-        System.out.println("");
+    public static ArrayList<String> userhomeMenuDescs() {
+        return null;
     }
 
     public static void userhomeMenu(final int cid) {
-        MenuItem[] menuItems = new MenuItem[] {
-                new MenuItem() {
-                    public void showDesc() { Book.simpleSearchMenuDesc(); }
-                    public void run() { Book.simpleSearchMenu(cid); }
-                },
-                new MenuItem() {
-                    @Override
-                    public void showDesc() {
-                        Book.advancedSearchDesc();
-                    }
+        ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
 
-                    @Override
-                    public void run() {
-                        Book.advancedSearch(cid);
-                    }
-                },
-                new MenuItem() {
-                    @Override
-                    public void showDesc() {
-                        Feedback.recordMenuDesc();
-                    }
+        menuItems.add(new MenuItem() {
+            public ArrayList<String> getDescs() { return Book.simpleSearchMenuDescs(); }
+            public void run() { Book.simpleSearchMenu(cid); }
+        });
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() { return Book.advancedSearchDescs();
+            }
 
-                    @Override
-                    public void run() {
-                        Feedback.recordMenu(cid);
-                    }
-                },
-                new MenuItem() {
-                    @Override
-                    public void showDesc() {
-                        Feedback.assessFeedbackDesc();
-                    }
+            @Override
+            public void run() {
+                Book.advancedSearch(cid);
+            }
+        });
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() { return Feedback.recordMenuDescs();
+            }
 
-                    @Override
-                    public void run() {
-                        Feedback.assessFeedback(cid);
-                    }
-                },
-                new MenuItem() {
-                    @Override
-                    public void showDesc() {
-                        Customer.declareUserDesc();
-                    }
+            @Override
+            public void run() {
+                Feedback.recordMenu(cid);
+            }
+        });
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() { return Feedback.assessFeedbackDescs();
+            }
 
-                    @Override
-                    public void run() {
-                        Customer.declareUser(cid);
-                    }
-                },
-                new MenuItem() {
-                    @Override
-                    public void showDesc() {
-                        Feedback.showFeedbacksMenuDesc();
-                    }
+            @Override
+            public void run() {
+                Feedback.assessFeedback(cid);
+            }
+        });
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() { return Customer.declareUserDescs();
+            }
 
-                    @Override
-                    public void run() {
-                        Feedback.showFeedbacksMenu();
-                    }
-                },
-                new MenuItem() {
-                    @Override
-                    public void showDesc() {
-                        Order.showAllOrdersDesc();
-                    }
+            @Override
+            public void run() {
+                Customer.declareUser(cid);
+            }
+        });
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() { return Feedback.showFeedbacksMenuDescs();
+            }
 
-                    @Override
-                    public void run() {
-                        Order.showAllOrder(cid);
-                    }
-                },
-                new MenuItem() {
-                    @Override
-                    public void showDesc() {
-                        Order.showCartDesc();
-                    }
+            @Override
+            public void run() {
+                Feedback.showFeedbacksMenu(cid);
+            }
+        });
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() { return Order.showAllOrdersDescs();
+            }
 
-                    @Override
-                    public void run() {
-                        Order.showCart(cid);
-                    }
-                },
-                new MenuItem() {
-                    @Override
-                    public void showDesc() {
-                        Order.confirmOrderDesc();
-                    }
+            @Override
+            public void run() {
+                Order.showAllOrder(cid);
+            }
+        });
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() { return Order.showCartDescs();
+            }
 
-                    @Override
-                    public void run() {
-                        Order.confirmOrder(cid);
-                    }
-                },
-                new MenuItem() {
-                    public void showDesc() { System.out.println("Return"); }
-                    public void run() { return; }
-                }
-        };
+            @Override
+            public void run() {
+                Order.showCart(cid);
+            }
+        });
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() { return Order.confirmOrderDescs();
+            }
 
+            @Override
+            public void run() {
+                Order.confirmOrder(cid);
+            }
+
+        });
+
+        int[] maxSizes = {50};
         MenuDisplay display = new MenuDisplay();
-        display.choose(menuItems);
+        display.chooseAndRun(menuItems, null, maxSizes, null, true);
     }
 
-    public static void trustedUsersDesc() {
-        System.out.println("Print the top m most 'trusted' users");
+    public static ArrayList<String> trustedUsersDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Print the top m most 'trusted' users");
+        return descs;
     }
 
     public static void trustedUsers() {
@@ -340,8 +338,10 @@ public class Customer {
         }
     }
 
-    public static void usefulUsersDesc() {
-        System.out.println("Print the top m most 'useful' users");
+    public static ArrayList<String> usefulUsersDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("Print the top m most 'useful' users");
+        return descs;
     }
 
     public static void usefulUsers() {

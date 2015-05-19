@@ -1,111 +1,135 @@
 package YuxinBookstore;
 
 import java.awt.*;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 
 /**
  * Created by Orthocenter on 5/14/15.
  */
 public class Admin {
 
-    public static void mainMenuDesc() {
-        System.out.println("For administrator");
+    public static ArrayList<String> mainMenuDescs() {
+        ArrayList<String> descs = new ArrayList<String>();
+        descs.add("For administrator");
+        return descs;
     }
 
     public static void mainMenu() {
-        MenuItem[] menuItems = new MenuItem[] {
-                new MenuItem(){
-                    public void showDesc() {
-                        Book.addBookDesc();
-                    }
-                    public void run() {
-                        Book.addBook();
-                    }
-                },
-                new MenuItem() {
-                    public void showDesc() {
-                        Book.replenishDesc();
-                    }
-                    public void run() {
-                        Book.replenish();
-                    }
-                },
-                new MenuItem() {
-                    @Override
-                    public void showDesc() {
-                        Author.showDegreesOfSeperationDesc();
-                    }
+        ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
 
-                    @Override
-                    public void run() {
-                        Author.showDegreesOfSeperation();
-                    }
-                },
-                new MenuItem() {
-                    @Override
-                    public void showDesc() {
-                        Book.showPopularBooksDesc();
-                    }
+        menuItems.add(new MenuItem(){
+            public ArrayList<String> getDescs() {
+                return Book.addBookDescs();
+            }
+            public void run() {
+                Book.addBook();
+            }
+        });
 
-                    @Override
-                    public void run() {
-                        Book.showPopularBooks();
-                    }
-                },
-                new MenuItem() {
-                    @Override
-                    public void showDesc() {
-                        Publisher.showPopularPublishersDesc();
-                    }
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() {
+                return Author.addDescs();
+            }
 
-                    @Override
-                    public void run() {
-                        Publisher.showPopularPublishers();
-                    }
-                },
-                new MenuItem() {
-                    @Override
-                    public void showDesc() {
-                        Author.showPopularAuthorsDesc();
-                    }
+            @Override
+            public void run() {
+                Author.add();
+            }
+        });
 
-                    @Override
-                    public void run() {
-                        Author.showPopularAuthors();
-                    }
-                },
-                new MenuItem() {
-                    @Override
-                    public void showDesc() {
-                        Customer.trustedUsersDesc();
-                    }
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() {
+                return Publisher.addDescs();
+            }
 
-                    @Override
-                    public void run() {
-                        Customer.trustedUsers();
-                    }
-                },
-                new MenuItem() {
-                    @Override
-                    public void showDesc() {
-                        Customer.usefulUsersDesc();
-                    }
+            @Override
+            public void run() {
+                Publisher.add();
+            }
+        });
 
-                    @Override
-                    public void run() {
-                        Customer.usefulUsers();
-                    }
-                },
-                new MenuItem() {
-                    public void showDesc() {
-                        System.out.println("Return");
-                    }
-                    public void run() {
-                        return;
-                    }
-                }
-        };
+        menuItems.add(new MenuItem() {
+            public ArrayList<String> getDescs() {
+                return Book.replenishDescs();
+            }
+            public void run() {
+                Book.replenish();
+            }
+        });
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() {
+                return Author.showDegreesOfSeperationDescs();
+            }
 
-        MenuDisplay.choose(menuItems);
+            @Override
+            public void run() {
+                Author.showDegreesOfSeperation();
+            }
+        });
+
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() {
+                return Book.showPopularBooksDescs();
+            }
+
+            @Override
+            public void run() {
+                Book.showPopularBooks();
+            }
+        });
+
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() {
+                return Publisher.showPopularPublishersDescs();
+            }
+
+            @Override
+            public void run() {
+                Publisher.showPopularPublishers();
+            }
+        });
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() {
+                return Author.showPopularAuthorsDescs();
+            }
+
+            @Override
+            public void run() {
+                Author.showPopularAuthors();
+            }
+        });
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() {
+                return Customer.trustedUsersDescs();
+            }
+
+            @Override
+            public void run() {
+                Customer.trustedUsers();
+            }
+        });
+        menuItems.add(new MenuItem() {
+            @Override
+            public ArrayList<String> getDescs() {
+                return Customer.usefulUsersDescs();
+            }
+
+            @Override
+            public void run() {
+                Customer.usefulUsers();
+            }
+        });
+
+        int[] maxSizes = {60};
+        MenuDisplay.chooseAndRun(menuItems, null, maxSizes, null, true);
     }
 
 }
