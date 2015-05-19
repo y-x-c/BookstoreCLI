@@ -15,14 +15,12 @@ java -cp ./mysql.jar:. YuxinBookstore.Bookstore
 / \/  \ (_) | (_) |   <\__ \ || (_) | | |  __/
 \_____/\___/ \___/|_|\_\___/\__\___/|_|  \___|
 
-  ╦ ╦┬ ┬─┐ ┬┬┌┐┌╔═╗┬ ┬┌─┐┌┐┌
-  ╚╦╝│ │┌┴┬┘││││║  ├─┤├┤ │││     13307130248
-   ╩ └─┘┴ └─┴┘└┘╚═╝┴ ┴└─┘┘└┘     May 19 2015
+     Yuxin Chen  13307103248  May 19, 2015
   -------------------------------------------
  |  0  |            For customer             |
  |  1  |          For administrator          |
   -------------------------------------------
-  Please enter your choice (-1 for return) :
+Please enter your choice (-1 for return) :
 ```
 
 ### Customer's Menu

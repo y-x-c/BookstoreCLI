@@ -50,9 +50,7 @@ package YuxinBookstore;
                "\\_____/\\___/ \\___/|_|\\_\\___/\\__\\___/|_|  \\___|\n" +
                "                                              ");
 
-        System.out.println("  ╦ ╦┬ ┬─┐ ┬┬┌┐┌╔═╗┬ ┬┌─┐┌┐┌\n" +
-                "  ╚╦╝│ │┌┴┬┘││││║  ├─┤├┤ │││     13307130248\n" +
-                "   ╩ └─┘┴ └─┴┘└┘╚═╝┴ ┴└─┘┘└┘     May 19 2015");
+        System.out.println("     Yuxin Chen  13307103248  May 19, 2015");
 
         MenuDisplay menuDisplay = new MenuDisplay();
         menuDisplay.chooseAndRun(menuItems, null, maxSizes, manners, false);
