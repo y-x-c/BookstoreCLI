@@ -4,7 +4,7 @@ Database Course Project
 ### Relative Page
 Online Demo: [http://chenyux.in/bookstore](http://chenyux.in/bookstore)
 
-Bookstore Frontend: [http://github.com/Orthocenter/BookstoreFrontend]ttp://github.com/Orthocenter/BookstoreFrontend)
+Bookstore Frontend: [http://github.com/Orthocenter/BookstoreFrontend](http://github.com/Orthocenter/BookstoreFrontend)
 
 Bookstore Backend: [http://github.com/Orthocenter/BookstoreBackend](http://github.com/Orthocenter/BookstoreBackend)
 
