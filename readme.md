@@ -1,5 +1,13 @@
 # YuxinBookstore
 Database Course Project
+
+### Relative Page
+Online Demo: [http://chenyux.in/bookstore](http://chenyux.in/bookstore)
+
+Bookstore Frontend: [http://github.com/Orthocenter/BookstoreFrontend]ttp://github.com/Orthocenter/BookstoreFrontend)
+
+Bookstore Backend: [http://github.com/Orthocenter/BookstoreBackend](http://github.com/Orthocenter/BookstoreBackend)
+
 ## Build & Run
 ```
 cd src
@@ -7,6 +15,8 @@ javac YuxinBookstore/*.java
 java -cp ./mysql.jar:. YuxinBookstore.Bookstore
 ```
 ## Preview
+Since font width of each character is not equal on Github, some of following tables may look strange.
+
 ### Welcome Page
 ```
    ___             _        _
