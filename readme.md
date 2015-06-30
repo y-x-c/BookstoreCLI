@@ -1,6 +1,8 @@
 # YuxinBookstore
 Database Course Project
 
+Some bugs have been found in this outdated repo, see [BookstoreBackend](http://github.com/Orthocenter/BookstoreBackend) for bug-fixed version
+
 ### Relative Page
 Online Demo: [http://chenyux.in/bookstore](http://chenyux.in/bookstore)
 
